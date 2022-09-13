@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="ImageCabinet.DirectoryNavigationBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ImageCabinet"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:io="clr-namespace:System.IO;assembly=mscorlib"
+             mc:Ignorable="d"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <UserControl.Resources>
+        <local:StringWithoutSlashConverter x:Key="strWithoutSlash"/>
+    </UserControl.Resources>
+    <Border CornerRadius="4" BorderBrush="WhiteSmoke" BorderThickness="1">
+        <ItemsControl ItemsSource="{Binding DirectoryNavigationItems}" VerticalAlignment="Center" Margin="4" HorizontalAlignment="Left">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type io:DirectoryInfo}">
+                    <StackPanel Orientation="Horizontal" TextElement.Foreground="WhiteSmoke">
+                        <TextBlock x:Name="Separator" Text="\" VerticalAlignment="Center"/>
+                        <Button Style="{StaticResource FlatButton}" Content="{Binding Name, Converter={StaticResource strWithoutSlash}}" Command="{Binding NavigateDirectoryCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DirectoryNavigationBar}}}" VerticalAlignment="Center" Foreground="WhiteSmoke"/>
+                    </StackPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Parent}" Value="{x:Null}">
+                            <Setter TargetName="Separator" Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Border>
+</UserControl>

@@ -23,6 +23,7 @@ namespace ImageCabinet
         public MainWindow()
         {
             InitializeComponent();
+            DirectoryNavigation.Path = @"D:\Files\Dropbox\kristallwelt\DnD\BattleMaps\deZigner\Tokens";
         }
     }
 }

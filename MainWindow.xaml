@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageCabinet"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         WindowStyle="None"
@@ -15,12 +14,12 @@
     <DockPanel>
         <local:TitleBar DockPanel.Dock="Top" x:Name="TitleBar"/>
         <Grid DockPanel.Dock="Top">
-            <Border Margin="4" CornerRadius="4" BorderBrush="WhiteSmoke" BorderThickness="1" MinHeight="32">
-
-            </Border>
+            <local:DirectoryNavigationBar Margin="4"  x:Name="DirectoryNavigation"/>
         </Grid>
         <Grid>
-            
+            <ItemsControl ItemsSource="{Binding Files}">
+                
+            </ItemsControl>
         </Grid>
     </DockPanel>
 </Window>
