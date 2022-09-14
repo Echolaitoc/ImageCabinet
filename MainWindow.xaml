@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageCabinet"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="ImageCabinet" Height="450" Width="800"
         WindowStyle="None"
+        Icon="{local:Icon folder-multiple-image, Width=128, Height=128, Fill=WhiteSmoke}"
         Background="DarkSlateGray">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>

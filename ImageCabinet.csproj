@@ -8,17 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Page Remove="icons\window-close.xaml" />
-    <Page Remove="icons\window-maximize.xaml" />
-    <Page Remove="icons\window-minimize.xaml" />
-    <Page Remove="icons\window-restore.xaml" />
+    <Page Remove="icons\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="icons\window-close.xaml" />
-    <EmbeddedResource Include="icons\window-maximize.xaml" />
-    <EmbeddedResource Include="icons\window-minimize.xaml" />
-    <EmbeddedResource Include="icons\window-restore.xaml" />
+    <EmbeddedResource Include="icons\*" />
   </ItemGroup>
 
 </Project>

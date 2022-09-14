@@ -17,6 +17,7 @@ namespace ImageCabinet
         public string Key { get; set; }
         public int Width { get; set; } = 24;
         public int Height { get; set; } = 24;
+        public Brush? Fill { get; set; } = null;
 
         public IconExtension(string key)
         {
@@ -60,23 +61,17 @@ namespace ImageCabinet
             var bmp = new RenderTargetBitmap(Width, Height, 96, 96, PixelFormats.Pbgra32);
             bmp.Render(frameworkElement);
 
-            var provideValueTarget = (IProvideValueTarget)serviceProvider.GetService(typeof(IProvideValueTarget));
-            var propertyType = (provideValueTarget.TargetProperty as DependencyProperty)?.PropertyType;
+            var provideValueTarget = (IProvideValueTarget?)serviceProvider.GetService(typeof(IProvideValueTarget));
+            var propertyType = (provideValueTarget?.TargetProperty as DependencyProperty)?.PropertyType;
             if (propertyType == typeof(ImageSource))
             {
                 return bmp;
             }
-            Brush fill = Brushes.WhiteSmoke;
-            if (provideValueTarget.TargetObject is Control target)
-            {
-                fill = target.Foreground;
-            }
-
-            return new Rectangle()
+            var rect = new Rectangle()
             {
                 Width = Width,
                 Height = Height,
-                Fill = fill,
+                Fill = GetFillBrush(provideValueTarget?.TargetObject as Control),
                 OpacityMask = new VisualBrush()
                 {
                     Visual = new Image()
@@ -87,13 +82,31 @@ namespace ImageCabinet
                     }
                 }
             };
-            
+
+            return rect;
         }
 
-        internal static object GetFromResources(string resourceName)
+        private Brush GetFillBrush(Control? target)
+        {
+            if (Fill == null)
+            {
+                Brush fill = Brushes.WhiteSmoke;
+                if (target != null)
+                {
+                    fill = target.Foreground;
+                }
+                return fill;
+            }
+            else
+            {
+                return Fill;
+            }
+        }
+
+        internal static object? GetFromResources(string resourceName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(assembly.GetName().Name + '.' + resourceName))
+            using (Stream? stream = assembly.GetManifestResourceStream(assembly.GetName().Name + '.' + resourceName))
             {
                 if (stream == null) return null;
                 return XamlReader.Load(stream);

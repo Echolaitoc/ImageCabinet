@@ -22,7 +22,22 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}"/>
                 </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
             </Style.Triggers>
+        </Style>
+        <Style x:Key="FlatTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="WhiteSmoke"/>
+            <Setter Property="CaretBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}}"/>
+            <Setter Property="Cursor" Value="IBeam"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <ScrollViewer x:Name="PART_ContentHost" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Application.Resources>
 </Application>
