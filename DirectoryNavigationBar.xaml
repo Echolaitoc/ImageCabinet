@@ -4,14 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ImageCabinet"
+             xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:io="clr-namespace:System.IO;assembly=mscorlib"
              mc:Ignorable="d"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="boolToVis"/>
-        <local:InverseBooleanToVisibilityConverter x:Key="invBoolToVis"/>
-        <local:StringWithoutSlashConverter x:Key="strWithoutSlash"/>
+        <ui:InverseBooleanToVisibilityConverter x:Key="invBoolToVis"/>
+        <ui:StringWithoutSlashConverter x:Key="strWithoutSlash"/>
     </UserControl.Resources>
     <DockPanel TextElement.Foreground="WhiteSmoke">
         <DockPanel.Resources>
@@ -20,9 +21,9 @@
                 <Setter Property="DockPanel.Dock" Value="Left"/>
             </Style>
         </DockPanel.Resources>
-        <Button Command="{Binding NavigateBackCommand}" Content="{local:Icon arrow-left-thick}"/>
-        <Button Command="{Binding NavigateForwardCommand}" Content="{local:Icon arrow-right-thick}"/>
-        <Button Command="{Binding NavigateUpCommand}" Content="{local:Icon arrow-up-thick}"/>
+        <Button Command="{Binding NavigateBackCommand}" Content="{ui:Icon arrow-left-thick}"/>
+        <Button Command="{Binding NavigateForwardCommand}" Content="{ui:Icon arrow-right-thick}"/>
+        <Button Command="{Binding NavigateUpCommand}" Content="{ui:Icon arrow-up-thick}"/>
         <Border CornerRadius="4" BorderBrush="WhiteSmoke" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
             <Grid Background="Transparent" MouseDown="GridMouseDown">
                 <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Background="Yellow" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}"/>

@@ -15,4 +15,8 @@
     <EmbeddedResource Include="icons\*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
 </Project>
