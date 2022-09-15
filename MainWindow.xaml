@@ -9,19 +9,16 @@
         Title="ImageCabinet" Height="450" Width="800"
         WindowStyle="None"
         Icon="{ui:Icon folder-multiple-image, Width=128, Height=128, Fill=WhiteSmoke}"
-        Background="DarkSlateGray">
+        Background="DarkSlateGray" TextElement.Foreground="WhiteSmoke">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>
     <DockPanel>
         <local:TitleBar DockPanel.Dock="Top" x:Name="TitleBar"/>
-        <Grid DockPanel.Dock="Top">
-            <local:DirectoryNavigationBar Margin="4"  x:Name="DirectoryNavigation"/>
-        </Grid>
-        <Grid>
-            <ItemsControl ItemsSource="{Binding Files}">
-                
-            </ItemsControl>
-        </Grid>
+        <DockPanel DockPanel.Dock="Top" Margin="4">
+            <ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0" x:Name="CheckboxIncludeSubfolders" ToolTip="Include subfolders" Content="{ui:Icon folder-outline, Width=24, Height=24}" ui:UIHelper.ToggledContent="{ui:Icon folder-download, Width=24, Height=24}" Style="{StaticResource FlatButton}"/>
+            <local:DirectoryNavigationBar DockPanel.Dock="Top" x:Name="DirectoryNavigation" VerticalAlignment="Center"/>
+        </DockPanel>
+        <local:FileView Path="{Binding Path, ElementName=DirectoryNavigation}" IncludeFilesInSubfolder="{Binding IsChecked, ElementName=CheckboxIncludeSubfolders}" Margin="4,8,4,4"/>
     </DockPanel>
 </Window>

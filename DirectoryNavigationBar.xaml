@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ImageCabinet"
              xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:io="clr-namespace:System.IO;assembly=mscorlib"
              mc:Ignorable="d"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
@@ -26,7 +25,11 @@
         <Button Command="{Binding NavigateUpCommand}" Content="{ui:Icon arrow-up-thick}"/>
         <Border CornerRadius="4" BorderBrush="WhiteSmoke" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
             <Grid Background="Transparent" MouseDown="GridMouseDown">
-                <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Background="Yellow" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}"/>
+                <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Background="Yellow" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Command="{Binding ConfirmPathTextBoxCommand}" Key="Enter" />
+                    </TextBox.InputBindings>
+                </TextBox>
                 <ItemsControl ItemsSource="{Binding DirectoryNavigationItems}" VerticalAlignment="Center" Margin="4" HorizontalAlignment="Left" Visibility="{Binding TextBoxVisible, Converter={StaticResource invBoolToVis}}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

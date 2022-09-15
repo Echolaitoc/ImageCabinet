@@ -16,8 +16,9 @@ namespace ImageCabinet
         public ICommand NavigateBackCommand { get; set; } = new RoutedUICommand();
         public ICommand NavigateForwardCommand { get; set; } = new RoutedUICommand();
         public ICommand NavigateUpCommand { get; set; } = new RoutedUICommand();
-        public ObservableCollection<DirectoryInfo> DirectoryNavigationItems { get; private set; } = new ObservableCollection<DirectoryInfo>();
-        private List<string> PathHistory { get; set; } = new List<string>();
+        public ICommand ConfirmPathTextBoxCommand { get; set; } = new RoutedUICommand();
+        public ObservableCollection<DirectoryInfo> DirectoryNavigationItems { get; private set; } = new();
+        private List<string> PathHistory { get; set; } = new();
         private bool UpdateHistory { get; set; } = true;
 
         private int _pathHistoryPosition = -1;
@@ -153,6 +154,7 @@ namespace ImageCabinet
             CommandBindings.Add(new CommandBinding(NavigateBackCommand, NavigateBack, CanNavigateBack));
             CommandBindings.Add(new CommandBinding(NavigateForwardCommand, NavigateForward, CanNavigateForward));
             CommandBindings.Add(new CommandBinding(NavigateUpCommand, NavigateUp, CanNavigateUp));
+            CommandBindings.Add(new CommandBinding(ConfirmPathTextBoxCommand, ConfirmPathTextBox));
         }
 
         private void Navigate(object sender, ExecutedRoutedEventArgs e)
@@ -213,6 +215,11 @@ namespace ImageCabinet
                 DirectoryInfo dirInfo = new DirectoryInfo(Path);
                 e.CanExecute = dirInfo.Parent != null;
             }
+        }
+
+        private void ConfirmPathTextBox(object sender, ExecutedRoutedEventArgs e)
+        {
+            TextBoxVisible = false;
         }
 
         private void GridMouseDown(object sender, MouseButtonEventArgs e)
