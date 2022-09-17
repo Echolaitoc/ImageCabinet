@@ -5,11 +5,71 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ImageCabinet"
              xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
+             xmlns:wpfToolkit="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
-        <ItemsControl ItemsSource="{Binding FileSystemItems}">
-            
-        </ItemsControl>
+        <Grid.Resources>
+            <sys:Double x:Key="ItemSize">200</sys:Double>
+            <ui:DoubleToSizeConverter x:Key="doubleToSize"/>
+            <ui:AdditionConverter x:Key="add"/>
+            <Style TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Background" Value="{StaticResource SemiTransparentWhiteSmoke}"/>
+                <Setter Property="BorderBrush" Value="WhiteSmoke"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Grid Background="Transparent" ToolTip="{Binding Name}">
+                                <Border x:Name="Outline" CornerRadius="4" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Visibility="Collapsed"/>
+                                <ContentPresenter Margin="4"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Outline" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+        <ListBox VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding FileSystemItems}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.Resources>
+                <DataTemplate DataType="{x:Type local:FileSystemItem}">
+                    <DataTemplate.Resources>
+                        <DataTemplate x:Key="DirectoryItem">
+                            <ContentControl Content="{ui:Icon folder-outline, 120}"/>
+                        </DataTemplate>
+                        <DataTemplate x:Key="GenericFileItem">
+                            <ContentControl Content="{ui:Icon file-outline, 120}"/>
+                        </DataTemplate>
+                    </DataTemplate.Resources>
+                    <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
+                        <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
+                        <ContentControl x:Name="ImagePresenter"/>
+                    </DockPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                            <Setter TargetName="ImagePresenter" Property="ContentTemplate" Value="{StaticResource DirectoryItem}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsFile}" Value="True">
+                            <Setter TargetName="ImagePresenter" Property="ContentTemplate" Value="{StaticResource GenericFileItem}"/>
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type local:ImageItem}">
+                    <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
+                        <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
+                        <Image Source="{Binding Path}"/>
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.Resources>
+        </ListBox>
     </Grid>
 </UserControl>

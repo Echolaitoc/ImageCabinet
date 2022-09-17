@@ -25,8 +25,8 @@
                 </Style>
             </DockPanel.Style>
             <Image Margin="4,0" VerticalAlignment="Center" DockPanel.Dock="Left" Source="{Binding Icon, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="16" Height="16" Stretch="Uniform" StretchDirection="DownOnly"/>
-            <Button Command="SystemCommands.CloseWindowCommand" Content="{ui:Icon window-close, Width=20, Height=20}" BorderBrush="OrangeRed" ToolTip="Close"/>
-            <Button Command="SystemCommands.RestoreWindowCommand" Content="{ui:Icon window-restore, Width=20, Height=20}" ToolTip="Restore">
+            <Button Command="SystemCommands.CloseWindowCommand" Content="{ui:Icon window-close, 20}" BorderBrush="OrangeRed" ToolTip="Close"/>
+            <Button Command="SystemCommands.RestoreWindowCommand" Content="{ui:Icon window-restore, 20}" ToolTip="Restore">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
                         <Style.Triggers>
@@ -37,7 +37,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Command="SystemCommands.MaximizeWindowCommand" Content="{ui:Icon window-maximize, Width=20, Height=20}" ToolTip="Maximize">
+            <Button Command="SystemCommands.MaximizeWindowCommand" Content="{ui:Icon window-maximize, 20}" ToolTip="Maximize">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
                         <Style.Triggers>
@@ -48,7 +48,7 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Command="SystemCommands.MinimizeWindowCommand" Content="{ui:Icon window-minimize, Width=20, Height=20}" ToolTip="Minimize">
+            <Button Command="SystemCommands.MinimizeWindowCommand" Content="{ui:Icon window-minimize, 20}" ToolTip="Minimize">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
                         <Style.Triggers>

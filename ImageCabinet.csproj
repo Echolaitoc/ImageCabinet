@@ -19,4 +19,8 @@
     <None Remove=".gitignore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
+  </ItemGroup>
+
 </Project>
