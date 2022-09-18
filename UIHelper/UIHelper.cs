@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media.Imaging;
 
 namespace ImageCabinet.UIHelper
 {
@@ -63,6 +65,46 @@ namespace ImageCabinet.UIHelper
             {
                 toggleButton.Content = toggledContent;
             }
+        }
+
+        public static BitmapImage? GetDownscaledBitmapImage(string path, int? maxWidth, int? maxHeight)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    int width = maxWidth.GetValueOrDefault();
+                    int height = maxHeight.GetValueOrDefault();
+                    using (var imageStream = File.OpenRead(path))
+                    {
+                        var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
+                        width = decoder.Frames[0].PixelWidth;
+                        height = decoder.Frames[0].PixelHeight;
+                    }
+
+                    BitmapImage bitmapImage = new();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriCachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.Default);
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmapImage.UriSource = new Uri(path);
+                    if (width > 0 && width >= height)
+                    {
+                        bitmapImage.DecodePixelWidth = maxWidth.HasValue ? Math.Min(width, maxWidth.GetValueOrDefault()) : width;
+                    }
+                    else if (height > 0)
+                    {
+                        bitmapImage.DecodePixelHeight = maxHeight.HasValue ? Math.Min(height, maxHeight.GetValueOrDefault()) : height;
+                    }
+                    bitmapImage.EndInit();
+                    bitmapImage.Freeze();
+                    return bitmapImage;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
         }
     }
 }

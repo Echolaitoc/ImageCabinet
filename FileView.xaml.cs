@@ -6,11 +6,33 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace ImageCabinet
 {
     public partial class FileView : UserControl
     {
+        private class FileViewImageItemToBitmapImageConverter : System.Windows.Data.IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                if (!(value is Image image)) return DependencyProperty.UnsetValue;
+                if (!(image.DataContext is ImageItem imageItem)) return DependencyProperty.UnsetValue;
+
+                var bmp = UIHelper.UIHelper.GetDownscaledBitmapImage(imageItem.Path, (int)image.Width, (int)image.Height);
+                if (bmp != null)
+                {
+                    return bmp;
+                }
+                return DependencyProperty.UnsetValue;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
         private static List<string> SUPPORTED_FILE_EXTENSIONS = new()
         {
             ".jpg",
@@ -19,6 +41,7 @@ namespace ImageCabinet
 
         public event EventHandler? OnItemDoubleClick;
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
+        private FileViewImageItemToBitmapImageConverter ImageItemConverter = new();
 
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
 
@@ -35,7 +58,10 @@ namespace ImageCabinet
         private static void OnPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(e.NewValue is string strPath) || !(d is FileView fileView)) return;
-            FillFileSystemItems(ref fileView, fileView.Path, true, true);
+            fileView.Dispatcher.BeginInvoke(() =>
+            {
+                FillFileSystemItems(ref fileView, fileView.Path, true, true);
+            });
         }
 
         private static void FillFileSystemItems(ref FileView fileView, string path, bool clearFileViewFirst, bool addFolders)
@@ -132,6 +158,62 @@ namespace ImageCabinet
                     System.Diagnostics.Trace.WriteLine(ex.Message);
                 }
             }
+        }
+
+        private void ImageItem_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateImage(sender);
+        }
+
+        private void ImageItem_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!e.WidthChanged && !e.HeightChanged) return;
+            UpdateImage(sender);
+        }
+
+        private bool TrueIfImageViaConverterFalseIfAsyncLoading { get; } = false;
+
+        private void UpdateImage(object sender)
+        {
+            if (TrueIfImageViaConverterFalseIfAsyncLoading)
+            {
+                SetImageViaConverter(sender);
+            }
+            else
+            {
+                SetImageAsync(sender);
+            }
+        }
+
+        private void SetImageViaConverter(object sender)
+        {
+            if (!(sender is Image image)) return;
+            var fallback = UIHelper.Icon.GetImageSource("file-outline", (int)image.Width, (int)image.Height);
+            var sourceBinding = new System.Windows.Data.Binding();
+            sourceBinding.Source = image;
+            sourceBinding.Converter = ImageItemConverter;
+            sourceBinding.IsAsync = true;
+            sourceBinding.Mode = System.Windows.Data.BindingMode.OneWay;
+            sourceBinding.FallbackValue = fallback;
+            sourceBinding.TargetNullValue = fallback;
+            image.SetBinding(Image.SourceProperty, sourceBinding);
+        }
+
+        private void SetImageAsync(object sender)
+        {
+            if (!(sender is Image image)) return;
+            if (!(image.DataContext is ImageItem imageItem)) return;
+            imageItem.UpdateImage((int)image.Width, (int)image.Height);
+
+            var fallback = UIHelper.Icon.GetImageSource("file-outline", (int)image.Width, (int)image.Height);
+            var bitmapBinding = new System.Windows.Data.Binding();
+            bitmapBinding.Source = imageItem;
+            bitmapBinding.Path = new PropertyPath(ImageItem.BitmapProperty);
+            bitmapBinding.IsAsync = true;
+            bitmapBinding.Mode = System.Windows.Data.BindingMode.OneWay;
+            bitmapBinding.FallbackValue = fallback;
+            bitmapBinding.TargetNullValue = fallback;
+            image.SetBinding(Image.SourceProperty, bitmapBinding);
         }
     }
 }

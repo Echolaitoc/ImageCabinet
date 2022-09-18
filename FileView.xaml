@@ -14,9 +14,11 @@
             <sys:Double x:Key="ItemSize">200</sys:Double>
             <ui:DoubleToSizeConverter x:Key="doubleToSize"/>
             <ui:AdditionConverter x:Key="add"/>
-            <Style TargetType="{x:Type ListBoxItem}">
+            <Style x:Key="FileViewListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
                 <Setter Property="Background" Value="{StaticResource SemiTransparentWhiteSmoke}"/>
                 <Setter Property="BorderBrush" Value="WhiteSmoke"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
@@ -37,7 +39,7 @@
                 </Setter>
             </Style>
         </Grid.Resources>
-        <ListBox VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding FileSystemItems}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended">
+        <ListBox VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding FileSystemItems}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
@@ -69,7 +71,9 @@
                 <DataTemplate DataType="{x:Type local:ImageItem}">
                     <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
                         <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
-                        <Image Source="{Binding Path, IsAsync=True}"/>
+                        <Grid>
+                            <Image Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Stretch="Uniform" StretchDirection="DownOnly" Loaded="ImageItem_Loaded" SizeChanged="ImageItem_SizeChanged"/>
+                        </Grid>
                     </DockPanel>
                 </DataTemplate>
             </ListBox.Resources>
