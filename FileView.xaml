@@ -21,6 +21,9 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
                             <Grid Background="Transparent" ToolTip="{Binding Name}">
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ItemDoubleClickCommand, RelativeSource={RelativeSource AncestorType={x:Type local:FileView}}}" CommandParameter="{Binding}"/>
+                                </Grid.InputBindings>
                                 <Border x:Name="Outline" CornerRadius="4" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Visibility="Collapsed"/>
                                 <ContentPresenter Margin="4"/>
                             </Grid>

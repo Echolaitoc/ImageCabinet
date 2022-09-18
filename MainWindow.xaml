@@ -20,7 +20,7 @@
             <local:DirectoryNavigationBar DockPanel.Dock="Top" x:Name="DirectoryNavigation" VerticalAlignment="Center"/>
         </DockPanel>
         <Grid Margin="4,8,4,4">
-            <local:FileView Path="{Binding Path, ElementName=DirectoryNavigation}" IncludeFilesInSubfolder="{Binding IsChecked, ElementName=CheckboxIncludeSubfolders}" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"/>
+            <local:FileView x:Name="FileViewer" Path="{Binding Path, ElementName=DirectoryNavigation}" IncludeFilesInSubfolder="{Binding IsChecked, ElementName=CheckboxIncludeSubfolders}" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"/>
         </Grid>
     </DockPanel>
 </Window>

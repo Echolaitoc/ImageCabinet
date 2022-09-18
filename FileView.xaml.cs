@@ -17,6 +17,9 @@ namespace ImageCabinet
             ".png",
         };
 
+        public event EventHandler OnItemDoubleClick;
+        public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
+
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
 
         public static readonly DependencyProperty PathProperty = DependencyProperty.Register("Path", typeof(string), typeof(FileView), new FrameworkPropertyMetadata()
@@ -49,11 +52,20 @@ namespace ImageCabinet
             try
             {
                 var dirs = Directory.EnumerateDirectories(path);
+                var fw = fileView;
                 foreach (var dir in dirs)
                 {
                     if (addFolders)
                     {
-                        fileView.FileSystemItems.Add(new FileSystemItem(new DirectoryInfo(dir)));
+                        var directory = new FileSystemItem(new DirectoryInfo(dir));
+                        directory.OnDoubleClick += (o, arg) =>
+                        {
+                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(directory))
+                            {
+                                fw.ItemDoubleClickCommand.Execute(directory);
+                            }
+                        };
+                        fileView.FileSystemItems.Add(directory);
                     }
                     if (fileView.IncludeFilesInSubfolder)
                     {
@@ -66,11 +78,27 @@ namespace ImageCabinet
                     var fileInfo = new FileInfo(file);
                     if (SUPPORTED_FILE_EXTENSIONS.Any(ext => file.EndsWith(ext)))
                     {
-                        fileView.FileSystemItems.Add(new ImageItem(fileInfo));
+                        var imageFile = new ImageItem(fileInfo);
+                        imageFile.OnDoubleClick += (o, arg) =>
+                        {
+                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(imageFile))
+                            {
+                                fw.ItemDoubleClickCommand.Execute(imageFile);
+                            }
+                        };
+                        fileView.FileSystemItems.Add(imageFile);
                     }
                     else
                     {
-                        fileView.FileSystemItems.Add(new FileSystemItem(fileInfo));
+                        var genericFile = new FileSystemItem(fileInfo);
+                        genericFile.OnDoubleClick += (o, arg) =>
+                        {
+                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(genericFile))
+                            {
+                                fw.ItemDoubleClickCommand.Execute(genericFile);
+                            }
+                        };
+                        fileView.FileSystemItems.Add(genericFile);
                     }
                 }
             }
@@ -99,6 +127,35 @@ namespace ImageCabinet
         public FileView()
         {
             InitializeComponent();
+
+            CommandBindings.Add(new CommandBinding(ItemDoubleClickCommand, HandleItemDoubleClick));
+        }
+
+        private void HandleItemDoubleClick(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!(e.Parameter is FileSystemItem fileSystemItem)) return;
+
+            if (fileSystemItem.IsDirectory && OnItemDoubleClick != null)
+            {
+                OnItemDoubleClick.Invoke(fileSystemItem, EventArgs.Empty);
+            }
+            else if (fileSystemItem.IsFile)
+            {
+                try
+                {
+                    var processStartInfo = new System.Diagnostics.ProcessStartInfo(fileSystemItem.Path)
+                    {
+                        WorkingDirectory = System.IO.Path.GetDirectoryName(fileSystemItem.Path),
+                        UseShellExecute = true,
+                    };
+                    System.Diagnostics.Process.Start(processStartInfo);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine("FileView.HandleItemDoubleClick: Can not open file " + fileSystemItem.Path);
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                }
+            }
         }
     }
 }

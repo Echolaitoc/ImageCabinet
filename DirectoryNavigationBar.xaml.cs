@@ -241,5 +241,11 @@ namespace ImageCabinet
         {
             TextBoxVisible = false;
         }
+
+        public void OnDirectoryNavigationRequest(object? sender, EventArgs e)
+        {
+            if (!(sender is FileSystemItem fileSystemItem) || !fileSystemItem.IsDirectory) return;
+            Path = fileSystemItem.Path;
+        }
     }
 }

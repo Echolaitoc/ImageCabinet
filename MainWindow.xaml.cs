@@ -9,6 +9,7 @@ namespace ImageCabinet
         {
             InitializeComponent();
             DirectoryNavigation.Path = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%");
+            FileViewer.OnItemDoubleClick += DirectoryNavigation.OnDirectoryNavigationRequest;
         }
     }
 }
