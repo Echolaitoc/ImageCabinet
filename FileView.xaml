@@ -69,7 +69,7 @@
                 <DataTemplate DataType="{x:Type local:ImageItem}">
                     <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
                         <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
-                        <Image Source="{Binding Path}"/>
+                        <Image Source="{Binding Path, IsAsync=True}"/>
                     </DockPanel>
                 </DataTemplate>
             </ListBox.Resources>

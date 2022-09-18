@@ -17,7 +17,7 @@ namespace ImageCabinet
             ".png",
         };
 
-        public event EventHandler OnItemDoubleClick;
+        public event EventHandler? OnItemDoubleClick;
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
 
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
@@ -57,15 +57,7 @@ namespace ImageCabinet
                 {
                     if (addFolders)
                     {
-                        var directory = new FileSystemItem(new DirectoryInfo(dir));
-                        directory.OnDoubleClick += (o, arg) =>
-                        {
-                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(directory))
-                            {
-                                fw.ItemDoubleClickCommand.Execute(directory);
-                            }
-                        };
-                        fileView.FileSystemItems.Add(directory);
+                        fileView.FileSystemItems.Add(new FileSystemItem(new DirectoryInfo(dir)));
                     }
                     if (fileView.IncludeFilesInSubfolder)
                     {
@@ -78,27 +70,11 @@ namespace ImageCabinet
                     var fileInfo = new FileInfo(file);
                     if (SUPPORTED_FILE_EXTENSIONS.Any(ext => file.EndsWith(ext)))
                     {
-                        var imageFile = new ImageItem(fileInfo);
-                        imageFile.OnDoubleClick += (o, arg) =>
-                        {
-                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(imageFile))
-                            {
-                                fw.ItemDoubleClickCommand.Execute(imageFile);
-                            }
-                        };
-                        fileView.FileSystemItems.Add(imageFile);
+                        fileView.FileSystemItems.Add(new ImageItem(fileInfo));
                     }
                     else
                     {
-                        var genericFile = new FileSystemItem(fileInfo);
-                        genericFile.OnDoubleClick += (o, arg) =>
-                        {
-                            if (fw.ItemDoubleClickCommand != null && fw.ItemDoubleClickCommand.CanExecute(genericFile))
-                            {
-                                fw.ItemDoubleClickCommand.Execute(genericFile);
-                            }
-                        };
-                        fileView.FileSystemItems.Add(genericFile);
+                        fileView.FileSystemItems.Add(new FileSystemItem(fileInfo));
                     }
                 }
             }

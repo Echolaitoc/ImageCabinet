@@ -5,7 +5,6 @@ namespace ImageCabinet
 {
     public class FileSystemItem
     {
-        public event EventHandler OnDoubleClick;
         public FileSystemInfo FileSystemInfo { get; set; }
         public bool IsFile { get { return FileSystemInfo != null && FileSystemInfo is FileInfo; } }
         public bool IsDirectory { get { return FileSystemInfo != null && FileSystemInfo is DirectoryInfo; } }
