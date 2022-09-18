@@ -17,10 +17,15 @@
 
   <ItemGroup>
     <None Remove=".gitignore" />
+    <None Remove="UIHelper\RecolorEffect.ps" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="UIHelper\RecolorEffect.ps" />
   </ItemGroup>
 
 </Project>

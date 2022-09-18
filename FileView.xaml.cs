@@ -185,10 +185,12 @@ namespace ImageCabinet
             }
         }
 
+        private const int FALLBACK_IMAGE_SIZE = 100;
+
         private void SetImageViaConverter(object sender)
         {
             if (!(sender is Image image)) return;
-            var fallback = UIHelper.Icon.GetImageSource("file-outline", (int)image.Width, (int)image.Height);
+            var fallback = UIHelper.Icon.GetImageSource("file-image-remove-outline", Colors.OrangeRed, FALLBACK_IMAGE_SIZE, FALLBACK_IMAGE_SIZE);
             var sourceBinding = new System.Windows.Data.Binding();
             sourceBinding.Source = image;
             sourceBinding.Converter = ImageItemConverter;
@@ -205,7 +207,7 @@ namespace ImageCabinet
             if (!(image.DataContext is ImageItem imageItem)) return;
             imageItem.UpdateImage((int)image.Width, (int)image.Height);
 
-            var fallback = UIHelper.Icon.GetImageSource("file-outline", (int)image.Width, (int)image.Height);
+            var fallback = UIHelper.Icon.GetImageSource("file-image-remove-outline", Colors.OrangeRed, FALLBACK_IMAGE_SIZE, FALLBACK_IMAGE_SIZE);
             var bitmapBinding = new System.Windows.Data.Binding();
             bitmapBinding.Source = imageItem;
             bitmapBinding.Path = new PropertyPath(ImageItem.BitmapProperty);

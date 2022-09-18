@@ -14,7 +14,7 @@ namespace ImageCabinet.UIHelper
     {
         internal const int DEFAULT_SIZE = 24;
 
-        public static ImageSource? GetImageSource(string key, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
+        public static ImageSource? GetImageSource(string key, Color? fill, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -50,17 +50,21 @@ namespace ImageCabinet.UIHelper
                 frameworkElement.Measure(new Size(width, height));
                 frameworkElement.Arrange(new Rect(0, 0, width, height));
             }
+            if (fill != null)
+            {
+                frameworkElement.Effect = new RecolorEffect(fill.GetValueOrDefault());
+            }
             var bmp = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
             bmp.Render(frameworkElement);
 
             return bmp;
         }
 
-        public static Rectangle GetMaskedRectangle(string key, Brush fill, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
+        public static Rectangle? GetMaskedRectangle(string key, Brush fill, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
         {
             width = width <= 0 ? DEFAULT_SIZE : width;
             height = height <= 0 ? DEFAULT_SIZE : height;
-            var bmp = GetImageSource(key, width, height);
+            var bmp = GetImageSource(key, null, width, height);
             if (bmp == null) return null;
 
             var rect = new Rectangle()
@@ -95,8 +99,6 @@ namespace ImageCabinet.UIHelper
 
     internal class IconExtension : MarkupExtension
     {
-        private const string ERROR = "error";
-
         public string Key { get; set; }
         public int Width { get; set; } = Icon.DEFAULT_SIZE;
         public int Height { get; set; } = Icon.DEFAULT_SIZE;
@@ -119,11 +121,17 @@ namespace ImageCabinet.UIHelper
             var propertyType = (provideValueTarget?.TargetProperty as DependencyProperty)?.PropertyType;
             if (propertyType == typeof(ImageSource))
             {
-                var bmp = Icon.GetImageSource(Key, Width, Height);
+                Color? fillColor = null;
+                if (Fill != null && Fill is SolidColorBrush solidFill)
+                {
+                    fillColor = solidFill.Color;
+                }
+                var bmp = Icon.GetImageSource(Key, fillColor, Width, Height);
                 return bmp == null ? DependencyProperty.UnsetValue : bmp;
             }
             var fill = GetFillBrush(provideValueTarget?.TargetObject as Control);
-            return Icon.GetMaskedRectangle(Key, fill, Width, Height);
+            var rect = Icon.GetMaskedRectangle(Key, fill, Width, Height);
+            return rect == null ? DependencyProperty.UnsetValue : rect;
         }
 
         private Brush GetFillBrush(Control? target)

@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="ImageCabinet" Height="450" Width="800"
         WindowStyle="None"
-        Icon="{ui:Icon folder-multiple-image, 128, Fill=WhiteSmoke}"
+        Icon="{ui:Icon folder-multiple-image, 128, Fill=Bisque}"
         Background="DarkSlateGray" TextElement.Foreground="WhiteSmoke">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>

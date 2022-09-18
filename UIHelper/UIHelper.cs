@@ -8,6 +8,7 @@ namespace ImageCabinet.UIHelper
 {
     public class UIHelper
     {
+        #region toggle content
         private static readonly DependencyProperty OffToggledContentProperty = DependencyProperty.RegisterAttached("OffToggledContent", typeof(object), typeof(UIHelper));
         public static void SetOffToggledContent(UIElement element, object value)
         {
@@ -66,6 +67,7 @@ namespace ImageCabinet.UIHelper
                 toggleButton.Content = toggledContent;
             }
         }
+        #endregion toggle content
 
         public static BitmapImage? GetDownscaledBitmapImage(string path, int? maxWidth, int? maxHeight)
         {
@@ -105,6 +107,14 @@ namespace ImageCabinet.UIHelper
             {
             }
             return null;
+        }
+
+        public static Uri MakePackUri(string relativeFile)
+        {
+            System.Reflection.Assembly a = typeof(UIHelper).Assembly;
+            string assemblyShortName = a.ToString().Split(',')[0];
+            string uriString = "pack://application:,,,/" + assemblyShortName + ";component/" + relativeFile;
+            return new Uri(uriString);
         }
     }
 }
