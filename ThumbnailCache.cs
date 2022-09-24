@@ -27,7 +27,7 @@ namespace ImageCabinet
             }
         }
 
-        private Queue<ImageInfo> PendingThumbnails { get; } = new();
+        private Stack<ImageInfo> PendingThumbnails { get; } = new();
         private Dictionary<string, BitmapImage> ImageDictionary { get; } = new();
         private BackgroundWorker LoadImagesBackgroundWorker { get; } = new();
 
@@ -41,7 +41,7 @@ namespace ImageCabinet
         {
             while (PendingThumbnails.Count > 0 && !LoadImagesBackgroundWorker.CancellationPending)
             {
-                var imageInfo = PendingThumbnails.Dequeue();
+                var imageInfo = PendingThumbnails.Pop();
                 var path = imageInfo.ImageItem?.Path;
                 if (LoadImagesBackgroundWorker.CancellationPending || !IsImageInfoStillValid(imageInfo, path))
                 {
@@ -153,7 +153,7 @@ namespace ImageCabinet
             var imageInfo = new ImageInfo(imageItem, maxWidth, maxHeight);
             if (!PendingThumbnails.Contains(imageInfo))
             {
-                PendingThumbnails.Enqueue(imageInfo);
+                PendingThumbnails.Push(imageInfo);
             }
             if (!LoadImagesBackgroundWorker.IsBusy)
             {

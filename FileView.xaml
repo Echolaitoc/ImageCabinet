@@ -22,9 +22,9 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                            <Grid Background="Transparent" ToolTip="{Binding Name}">
+                            <Grid x:Name="RootGrid" Background="Transparent" ToolTip="{Binding Name}">
                                 <Grid.InputBindings>
-                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ItemDoubleClickCommand, RelativeSource={RelativeSource AncestorType={x:Type local:FileView}}}" CommandParameter="{Binding}"/>
+                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding ItemDoubleClickCommand, RelativeSource={RelativeSource AncestorType={x:Type local:FileView}}, FallbackValue={x:Null}, TargetNullValue={x:Null}}" CommandParameter="{Binding}"/>
                                 </Grid.InputBindings>
                                 <Border x:Name="Outline" CornerRadius="4" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Visibility="Collapsed"/>
                                 <ContentPresenter Margin="4"/>
@@ -38,8 +38,13 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <CollectionViewSource x:Key="FileSystemItemsViewSource" Source="{Binding FileSystemItems}">
+                <CollectionViewSource.GroupDescriptions>
+                    <PropertyGroupDescription PropertyName="IsDirectory"/>
+                </CollectionViewSource.GroupDescriptions>
+            </CollectionViewSource>
         </Grid.Resources>
-        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding FileSystemItems}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
+        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
