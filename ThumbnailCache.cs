@@ -56,7 +56,7 @@ namespace ImageCabinet
                         bitmap.BeginInit();
                         bitmap.StreamSource = new MemoryStream(bytes);
                         bitmap.EndInit();
-                        if (!LoadImagesBackgroundWorker.CancellationPending && !ImageDictionary.ContainsKey(path) && IsImageInfoStillValid(imageInfo, path))
+                        if (!LoadImagesBackgroundWorker.CancellationPending && !ImageDictionary.ContainsKey(path == null ? string.Empty : path) && IsImageInfoStillValid(imageInfo, path))
                         {
                             ImageDictionary.Add(path, bitmap);
                             imageInfo.ImageItem.SetImage(bitmap);
@@ -131,9 +131,9 @@ namespace ImageCabinet
             return null;
         }
 
-        private bool IsImageInfoStillValid(ImageInfo imageInfo, string path)
+        private bool IsImageInfoStillValid(ImageInfo imageInfo, string? path)
         {
-            return imageInfo.ImageItem != null && imageInfo.ImageItem.Path == path;
+            return imageInfo.ImageItem != null && path != null && imageInfo.ImageItem.Path == path;
         }
 
         public void ClearCache()

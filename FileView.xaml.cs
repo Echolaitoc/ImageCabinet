@@ -57,7 +57,6 @@ namespace ImageCabinet
             try
             {
                 var dirs = Directory.EnumerateDirectories(path);
-                var fw = fileView;
                 foreach (var dir in dirs)
                 {
                     if (addFolders)

@@ -5,13 +5,13 @@ using System.Windows.Data;
 
 namespace ImageCabinet.UIHelper
 {
-    public class AdditionConverter : IValueConverter
+    public class MultiplicationConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.CurrentCulture, out double a) && double.TryParse(parameter.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out double b))
+            if (double.TryParse(value.ToString(), NumberStyles.Float, CultureInfo.CurrentCulture, out double a) && double.TryParse(parameter.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double b))
             {
-                return a + b;
+                return a * b;
             }
             return DependencyProperty.UnsetValue;
         }

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <None Remove=".gitignore" />
+    <None Remove="ImageCabinet.args.json" />
     <None Remove="UIHelper\RecolorEffect.ps" />
   </ItemGroup>
 

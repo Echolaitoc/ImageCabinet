@@ -36,7 +36,7 @@ namespace ImageCabinet.UIHelper
             set { SetValue(InputProperty, value); }
         }
 
-        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register("BlankColor", typeof(Color), typeof(RecolorEffect), new UIPropertyMetadata(Colors.Magenta, PixelShaderConstantCallback(0)));
+        public static readonly DependencyProperty ColorProperty = DependencyProperty.Register("Color", typeof(Color), typeof(RecolorEffect), new UIPropertyMetadata(Colors.Magenta, PixelShaderConstantCallback(0)));
         public Color Color
         {
             get { return (Color)GetValue(ColorProperty); }
