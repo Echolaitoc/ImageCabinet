@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -10,7 +7,7 @@ namespace ImageCabinet
 {
     public class ImageItem : FileSystemItem
     {
-        private static readonly DependencyPropertyKey BitmapPropertyKey = DependencyProperty.RegisterReadOnly("Bitmap", typeof(ImageSource), typeof(FileView), new PropertyMetadata());
+        private static readonly DependencyPropertyKey BitmapPropertyKey = DependencyProperty.RegisterReadOnly("Bitmap", typeof(ImageSource), typeof(ImageItem), new PropertyMetadata());
         public static readonly DependencyProperty BitmapProperty = BitmapPropertyKey.DependencyProperty;
         public ImageSource Bitmap
         {
@@ -18,67 +15,23 @@ namespace ImageCabinet
             private set { SetValue(BitmapPropertyKey, value); }
         }
 
-        private CancellationTokenSource? GenerateBitmapCancellationTokenSource;
+        private static readonly DependencyPropertyKey IsLoadingPropertyKey = DependencyProperty.RegisterReadOnly("IsLoading", typeof(bool), typeof(ImageItem), new PropertyMetadata(true));
+        public static readonly DependencyProperty IsLoadingProperty = IsLoadingPropertyKey.DependencyProperty;
+        public bool IsLoading
+        {
+            get { return (bool)GetValue(IsLoadingProperty); }
+            private set { SetValue(IsLoadingPropertyKey, value); }
+        }
 
         public ImageItem(FileInfo fileSystemInfo) : base(fileSystemInfo)
         {
         }
 
-        public async void UpdateImageAsync(int maxWidth, int maxHeight)
+        public void SetImage(BitmapSource? bitmap)
         {
-            try
-            {
-                if (GenerateBitmapCancellationTokenSource != null)
-                {
-                    GenerateBitmapCancellationTokenSource.Cancel();
-                }
-                GenerateBitmapCancellationTokenSource = new CancellationTokenSource();
-                Bitmap = await Task.Run(() =>
-                {
-                    try
-                    {
-                        var bmp = UIHelper.UIHelper.GetDownscaledBitmapImage(Path, maxWidth, maxHeight);
-                        if (bmp != null)
-                        {
-                            return bmp;
-                        }
-                    }
-                    catch (TaskCanceledException)
-                    {
-                    }
-                    return new BitmapImage();
-                }, GenerateBitmapCancellationTokenSource.Token);
-            }
-            catch (TaskCanceledException)
-            {
-
-            }
-            finally
-            {
-                if (GenerateBitmapCancellationTokenSource != null)
-                {
-                    GenerateBitmapCancellationTokenSource.Dispose();
-                    GenerateBitmapCancellationTokenSource = null;
-                }
-            }
-        }
-
-        public void UpdateImage(int maxWidth, int maxHeight)
-        {
-            Dispatcher.BeginInvoke(() =>
-            {
-                try
-                {
-                    var bmp = UIHelper.UIHelper.GetDownscaledBitmapImage(Path, maxWidth, maxHeight);
-                    if (bmp != null)
-                    {
-                        Bitmap = bmp;
-                    }
-                }
-                catch (TaskCanceledException)
-                {
-                }
-            });
+            IsLoading = false;
+            if (bitmap == null) return;
+            Bitmap = bitmap;
         }
     }
 }

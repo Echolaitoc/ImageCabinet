@@ -6,33 +6,11 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace ImageCabinet
 {
     public partial class FileView : UserControl
     {
-        private class FileViewImageItemToBitmapImageConverter : System.Windows.Data.IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            {
-                if (!(value is Image image)) return DependencyProperty.UnsetValue;
-                if (!(image.DataContext is ImageItem imageItem)) return DependencyProperty.UnsetValue;
-
-                var bmp = UIHelper.UIHelper.GetDownscaledBitmapImage(imageItem.Path, (int)image.Width, (int)image.Height);
-                if (bmp != null)
-                {
-                    return bmp;
-                }
-                return DependencyProperty.UnsetValue;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            {
-                throw new NotSupportedException();
-            }
-        }
-
         private static List<string> SUPPORTED_FILE_EXTENSIONS = new()
         {
             ".jpg",
@@ -41,7 +19,7 @@ namespace ImageCabinet
 
         public event EventHandler? OnItemDoubleClick;
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
-        private FileViewImageItemToBitmapImageConverter ImageItemConverter = new();
+        private ThumbnailCache Thumbnails { get; set; } = new();
 
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
 
@@ -58,6 +36,7 @@ namespace ImageCabinet
         private static void OnPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(e.NewValue is string strPath) || !(d is FileView fileView)) return;
+            fileView.Thumbnails.ClearCache();
             fileView.Dispatcher.BeginInvoke(() =>
             {
                 FillFileSystemItems(ref fileView, fileView.Path, true, true);
@@ -107,6 +86,18 @@ namespace ImageCabinet
             catch (Exception)
             {
 
+            }
+            fileView.ScrollToTop();
+        }
+
+        private void ScrollToTop()
+        {
+            if (FileViewListBox == null) return;
+
+            var scrollViewer = UIHelper.UIHelper.GetVisualChild<ScrollViewer>(FileViewListBox);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToTop();
             }
         }
 
@@ -171,51 +162,26 @@ namespace ImageCabinet
             UpdateImage(sender);
         }
 
-        private bool TrueIfImageViaConverterFalseIfAsyncLoading { get; } = false;
-
         private void UpdateImage(object sender)
-        {
-            if (TrueIfImageViaConverterFalseIfAsyncLoading)
-            {
-                SetImageViaConverter(sender);
-            }
-            else
-            {
-                SetImageAsync(sender);
-            }
-        }
-
-        private const int FALLBACK_IMAGE_SIZE = 100;
-
-        private void SetImageViaConverter(object sender)
-        {
-            if (!(sender is Image image)) return;
-            var fallback = UIHelper.Icon.GetImageSource("file-image-remove-outline", Colors.OrangeRed, FALLBACK_IMAGE_SIZE, FALLBACK_IMAGE_SIZE);
-            var sourceBinding = new System.Windows.Data.Binding();
-            sourceBinding.Source = image;
-            sourceBinding.Converter = ImageItemConverter;
-            sourceBinding.IsAsync = true;
-            sourceBinding.Mode = System.Windows.Data.BindingMode.OneWay;
-            sourceBinding.FallbackValue = fallback;
-            sourceBinding.TargetNullValue = fallback;
-            image.SetBinding(Image.SourceProperty, sourceBinding);
-        }
-
-        private void SetImageAsync(object sender)
         {
             if (!(sender is Image image)) return;
             if (!(image.DataContext is ImageItem imageItem)) return;
-            imageItem.UpdateImage((int)image.Width, (int)image.Height);
+            if (image.IsLoaded)
+            {
+                Thumbnails.LoadImage(imageItem, (int)image.Width, (int)image.Height);
+            }
+            else
+            {
+                image.Loaded -= Image_Loaded;
+                image.Loaded += Image_Loaded;
+            }
+        }
 
-            var fallback = UIHelper.Icon.GetImageSource("file-image-remove-outline", Colors.OrangeRed, FALLBACK_IMAGE_SIZE, FALLBACK_IMAGE_SIZE);
-            var bitmapBinding = new System.Windows.Data.Binding();
-            bitmapBinding.Source = imageItem;
-            bitmapBinding.Path = new PropertyPath(ImageItem.BitmapProperty);
-            bitmapBinding.IsAsync = true;
-            bitmapBinding.Mode = System.Windows.Data.BindingMode.OneWay;
-            bitmapBinding.FallbackValue = fallback;
-            bitmapBinding.TargetNullValue = fallback;
-            image.SetBinding(Image.SourceProperty, bitmapBinding);
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Image image)) return;
+            if (!(image.DataContext is ImageItem imageItem)) return;
+            Thumbnails.LoadImage(imageItem, (int)image.Width, (int)image.Height);
         }
     }
 }

@@ -102,6 +102,7 @@ namespace ImageCabinet.UIHelper
         public string Key { get; set; }
         public int Width { get; set; } = Icon.DEFAULT_SIZE;
         public int Height { get; set; } = Icon.DEFAULT_SIZE;
+        public bool ForceProvideImageSource { get; set; } = false;
         public Brush? Fill { get; set; } = null;
 
         public IconExtension(string key) : this(key, Icon.DEFAULT_SIZE) {}
@@ -119,7 +120,7 @@ namespace ImageCabinet.UIHelper
         {
             var provideValueTarget = (IProvideValueTarget?)serviceProvider.GetService(typeof(IProvideValueTarget));
             var propertyType = (provideValueTarget?.TargetProperty as DependencyProperty)?.PropertyType;
-            if (propertyType == typeof(ImageSource))
+            if (propertyType == typeof(ImageSource) || ForceProvideImageSource)
             {
                 Color? fillColor = null;
                 if (Fill != null && Fill is SolidColorBrush solidFill)
