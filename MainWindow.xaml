@@ -6,15 +6,34 @@
         xmlns:local="clr-namespace:ImageCabinet"
         xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
         mc:Ignorable="d"
-        Title="ImageCabinet" Height="450" Width="800"
+        Title="ImageCabinet" Height="450" Width="800" MinHeight="{Binding ActualHeight, ElementName=TitleBar}"
         WindowStyle="None"
-        Icon="{ui:Icon folder-multiple-image, 128, Fill=Bisque}"
-        Background="DarkSlateGray" TextElement.Foreground="WhiteSmoke">
+        Icon="{ui:Icon folder-multiple-image, 128, Fill=Bisque, AddShadow=True}"
+        Background="{DynamicResource DefaultBackground}" TextElement.Foreground="{DynamicResource DefaultForeground}">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>
     <DockPanel>
-        <local:TitleBar DockPanel.Dock="Top" x:Name="TitleBar"/>
+        <DockPanel.Resources>
+            <ui:BrushToValueAdjustedBrushConverter x:Key="valueAdjust"/>
+            <DataTemplate x:Key="SettingsButtonTemplate">
+                <Grid>
+                    <Button x:Name="SettingsButton" Content="{ui:Icon wrench, 12}" Padding="4" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Settings" Style="{StaticResource FlatButton}" ui:UIHelper.OpenPopupOnClick="{Binding ElementName=SettingsPopup}"/>
+                    <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=SettingsButton}" StaysOpen="False" AllowsTransparency="True">
+                        <Border Tag="{DynamicResource DefaultBackground}" Background="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource valueAdjust}, ConverterParameter=0.1}" CornerRadius="4" Width="100" Height="100" Margin="4">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="1" Direction="270" BlurRadius="10" Color="{DynamicResource ShadowColor}"/>
+                            </Border.Effect>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </DataTemplate>
+        </DockPanel.Resources>
+        <local:TitleBar DockPanel.Dock="Top" x:Name="TitleBar">
+            <local:TitleBar.ButtonNeighborContent>
+                <ContentControl ContentTemplate="{StaticResource SettingsButtonTemplate}"/>
+            </local:TitleBar.ButtonNeighborContent>
+        </local:TitleBar>
         <DockPanel DockPanel.Dock="Top" Margin="4">
             <ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0" x:Name="CheckboxIncludeSubfolders" ToolTip="Include subfolders" Content="{ui:Icon folder-outline, 24}" ui:UIHelper.ToggledContent="{ui:Icon folder-download, 24}" Style="{StaticResource FlatButton}"/>
             <local:DirectoryNavigationBar DockPanel.Dock="Top" x:Name="DirectoryNavigation" VerticalAlignment="Center"/>

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Page Remove="icons\*" />
+    <Page Remove="themes\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="themes\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Page Remove="ThemeColors.xaml" />
+    <Resource Include="ThemeColors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
     <Resource Include="UIHelper\RecolorEffect.ps" />
   </ItemGroup>
 

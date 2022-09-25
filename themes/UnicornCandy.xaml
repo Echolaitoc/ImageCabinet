@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="DefaultForegroundColor">#5A77d8</Color>
+    <Color x:Key="DefaultBackgroundColor">#FFC8DD</Color>
+    <Color x:Key="TitleBarBackgroundColor">#CDB4DB</Color>
+    <Color x:Key="CloseAppButtonColor">#FFAFCC</Color>
+    <Color x:Key="ShadowColor">#921C66</Color>
+</ResourceDictionary>

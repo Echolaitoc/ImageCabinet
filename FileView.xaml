@@ -14,9 +14,10 @@
             <sys:Double x:Key="ItemSize">200</sys:Double>
             <ui:DoubleToSizeConverter x:Key="doubleToSize"/>
             <ui:AdditionConverter x:Key="add"/>
+            <ui:BrushToTransmittantBrushConverter x:Key="brushToTransmittent"/>
             <Style x:Key="FileViewListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
-                <Setter Property="Background" Value="{StaticResource SemiTransparentWhiteSmoke}"/>
-                <Setter Property="BorderBrush" Value="WhiteSmoke"/>
+                <Setter Property="Background" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource brushToTransmittent}, ConverterParameter=0.2}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource DefaultForeground}"/>
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                 <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                 <Setter Property="Template">
@@ -41,10 +42,11 @@
             <CollectionViewSource x:Key="FileSystemItemsViewSource" Source="{Binding FileSystemItems}">
                 <CollectionViewSource.GroupDescriptions>
                     <PropertyGroupDescription PropertyName="IsDirectory"/>
+                    <PropertyGroupDescription PropertyName="IsImage"/>
                 </CollectionViewSource.GroupDescriptions>
             </CollectionViewSource>
         </Grid.Resources>
-        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="WhiteSmoke" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
+        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="{DynamicResource DefaultForeground}" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
@@ -77,7 +79,7 @@
                     <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
                         <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
                         <Grid>
-                            <Image x:Name="ImageControl" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Source="{ui:Icon image-sync-outline, 100, Fill=WhiteSmoke}" Stretch="Uniform" StretchDirection="DownOnly" Loaded="ImageItem_Loaded" SizeChanged="ImageItem_SizeChanged"/>
+                            <Image x:Name="ImageControl" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Source="{ui:Icon image-sync-outline, 100, Fill={StaticResource DefaultForeground}}" Stretch="Uniform" StretchDirection="DownOnly" Loaded="ImageItem_Loaded" SizeChanged="ImageItem_SizeChanged"/>
                         </Grid>
                     </DockPanel>
                     <DataTemplate.Triggers>

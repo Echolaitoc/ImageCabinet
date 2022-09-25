@@ -6,6 +6,13 @@ namespace ImageCabinet
 {
     public partial class TitleBar : UserControl
     {
+        public static readonly DependencyProperty ButtonNeighborContentProperty = DependencyProperty.Register("ButtonNeighborContent", typeof(object), typeof(TitleBar), new FrameworkPropertyMetadata());
+        public object ButtonNeighborContent
+        {
+            get { return GetValue(ButtonNeighborContentProperty); }
+            set { SetValue(ButtonNeighborContentProperty, value); }
+        }
+
         public TitleBar()
         {
             InitializeComponent();

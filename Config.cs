@@ -76,6 +76,7 @@ namespace ImageCabinet
         }
         #endregion Config Initialization
 
-        public string StartupDirectory { get; private set; }
+        public string StartupDirectory { get; private set; } = string.Empty;
+        public string Theme { get; private set; } = "DefaultDark";
     }
 }

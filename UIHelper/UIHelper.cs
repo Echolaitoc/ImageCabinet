@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace ImageCabinet.UIHelper
 {
@@ -11,27 +9,15 @@ namespace ImageCabinet.UIHelper
     {
         #region toggle content
         private static readonly DependencyProperty OffToggledContentProperty = DependencyProperty.RegisterAttached("OffToggledContent", typeof(object), typeof(UIHelper));
-        public static void SetOffToggledContent(UIElement element, object value)
-        {
-            element.SetValue(OffToggledContentProperty, value);
-        }
-        public static object GetOffToggledContent(UIElement element)
-        {
-            return element.GetValue(OffToggledContentProperty);
-        }
+        public static void SetOffToggledContent(ToggleButton toggleButton, object value) { toggleButton.SetValue(OffToggledContentProperty, value); }
+        public static object GetOffToggledContent(ToggleButton toggleButton) { return toggleButton.GetValue(OffToggledContentProperty); }
 
         public static readonly DependencyProperty ToggledContentProperty = DependencyProperty.RegisterAttached("ToggledContent", typeof(object), typeof(UIHelper), new PropertyMetadata()
         {
             PropertyChangedCallback = OnToggledContentChanged
         });
-        public static void SetToggledContent(UIElement element, object value)
-        {
-            element.SetValue(ToggledContentProperty, value);
-        }
-        public static object GetToggledContent(UIElement element)
-        {
-            return element.GetValue(ToggledContentProperty);
-        }
+        public static void SetToggledContent(ToggleButton toggleButton, object value) { toggleButton.SetValue(ToggledContentProperty, value); }
+        public static object GetToggledContent(ToggleButton toggleButton) { return toggleButton.GetValue(ToggledContentProperty); }
 
         private static void OnToggledContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -69,6 +55,32 @@ namespace ImageCabinet.UIHelper
             }
         }
         #endregion toggle content
+
+        #region popup helper
+        public static readonly DependencyProperty OpenPopupOnClickProperty = DependencyProperty.RegisterAttached("OpenPopupOnClick", typeof(Popup), typeof(UIHelper), new PropertyMetadata()
+        {
+            PropertyChangedCallback = OpenPopupOnClickChanged
+        });
+        public static void SetOpenPopupOnClick(ButtonBase button, Popup value) { button.SetValue(OpenPopupOnClickProperty, value); }
+        public static Popup GetOpenPopupOnClick(ButtonBase button) { return (Popup)button.GetValue(OpenPopupOnClickProperty); }
+
+        private static void OpenPopupOnClickChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (!(d is ButtonBase button)) return;
+
+            button.Click -= OpenPopupOnClick_Click;
+            if (e.NewValue is Popup popup)
+            {
+                button.Click += OpenPopupOnClick_Click;
+            }
+        }
+
+        private static void OpenPopupOnClick_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is ButtonBase button) || !(GetOpenPopupOnClick(button) is Popup popup)) return;
+            popup.IsOpen = true;
+        }
+        #endregion popup helper
 
         public static Uri MakePackUri(string relativeFile)
         {

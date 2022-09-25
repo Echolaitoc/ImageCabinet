@@ -1,0 +1,7 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="DefaultForeground" Color="{DynamicResource DefaultForegroundColor}"/>
+    <SolidColorBrush x:Key="DefaultBackground" Color="{DynamicResource DefaultBackgroundColor}"/>
+    <SolidColorBrush x:Key="TitleBarBackground" Color="{DynamicResource TitleBarBackgroundColor}"/>
+    <SolidColorBrush x:Key="CloseAppButtonBrush" Color="{DynamicResource CloseAppButtonColor}"/>
+</ResourceDictionary>

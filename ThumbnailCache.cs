@@ -27,6 +27,7 @@ namespace ImageCabinet
             }
         }
 
+        private const double DEFAULT_DPI = 96.0;
         private Stack<ImageInfo> PendingThumbnails { get; } = new();
         private Dictionary<string, BitmapImage> ImageDictionary { get; } = new();
         private BackgroundWorker LoadImagesBackgroundWorker { get; } = new();
@@ -82,11 +83,15 @@ namespace ImageCabinet
                 {
                     int width = imageInfo.MaxWidth;
                     int height = imageInfo.MaxHeight;
+                    double dpiX = DEFAULT_DPI;
+                    double dpiY = DEFAULT_DPI;
                     using (var imageStream = File.OpenRead(imageInfo.ImageItem.Path))
                     {
                         var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
                         width = decoder.Frames[0].PixelWidth;
                         height = decoder.Frames[0].PixelHeight;
+                        dpiX = decoder.Frames[0].DpiX;
+                        dpiY = decoder.Frames[0].DpiY;
                         if (decoder.Thumbnail != null)
                         {
                             imageInfo.ImageItem.SetImage(decoder.Thumbnail);
@@ -101,19 +106,22 @@ namespace ImageCabinet
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
                     bitmapImage.UriSource = new Uri(imageInfo.ImageItem.Path);
+                    double scale = 1.0;
                     if (width > 0 && width >= height)
                     {
-                        if (imageInfo.MaxWidth < width)
+                        if (Math.Round(dpiX) != DEFAULT_DPI)
                         {
-                            bitmapImage.DecodePixelWidth = imageInfo.MaxWidth;
+                            scale = dpiX / DEFAULT_DPI;
                         }
+                        bitmapImage.DecodePixelWidth = (int)(Math.Min(imageInfo.MaxWidth, width) * scale);
                     }
                     else if (height > 0)
                     {
-                        if (imageInfo.MaxHeight < height)
+                        if (Math.Round(dpiY) != DEFAULT_DPI)
                         {
-                            bitmapImage.DecodePixelHeight = imageInfo.MaxHeight;
+                            scale = dpiY / DEFAULT_DPI;
                         }
+                        bitmapImage.DecodePixelHeight = (int)(Math.Min(imageInfo.MaxHeight, height) * scale);
                     }
                     bitmapImage.EndInit();
                     PngBitmapEncoder encoder = new PngBitmapEncoder();

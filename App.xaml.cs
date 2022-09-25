@@ -7,6 +7,7 @@ namespace ImageCabinet
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Config.Current.Initialize(e);
+            UIHelper.ThemeManager.LoadTheme(Config.Current.Theme);
             MainWindow wnd = new(Config.Current.StartupDirectory);
             wnd.Show();
         }

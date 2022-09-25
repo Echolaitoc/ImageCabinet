@@ -19,5 +19,10 @@ namespace ImageCabinet
             DirectoryNavigation.Path = startupDirectory;
             FileViewer.OnItemDoubleClick += DirectoryNavigation.OnDirectoryNavigationRequest;
         }
+
+        private void TestThemeSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            UIHelper.ThemeManager.LoadTheme("UnicornCandy");
+        }
     }
 }

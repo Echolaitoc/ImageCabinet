@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ImageCabinet"
              xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
-             mc:Ignorable="d">
-    <Grid Background="SlateGray">
-        <DockPanel TextElement.Foreground="WhiteSmoke">
+             mc:Ignorable="d"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid Background="{DynamicResource TitleBarBackground}">
+        <DockPanel TextElement.Foreground="{DynamicResource DefaultForeground}">
             <DockPanel.Resources>
                 <Style TargetType="{x:Type Button}" BasedOn="{StaticResource FlatButton}">
                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -25,7 +26,7 @@
                 </Style>
             </DockPanel.Style>
             <Image Margin="4,0" VerticalAlignment="Center" DockPanel.Dock="Left" Source="{Binding Icon, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="16" Height="16" Stretch="Uniform" StretchDirection="DownOnly"/>
-            <Button Command="SystemCommands.CloseWindowCommand" Content="{ui:Icon window-close, 20}" BorderBrush="OrangeRed" ToolTip="Close"/>
+            <Button Command="SystemCommands.CloseWindowCommand" Content="{ui:Icon window-close, 20}" BorderBrush="{DynamicResource CloseAppButtonBrush}" ToolTip="Close"/>
             <Button Command="SystemCommands.RestoreWindowCommand" Content="{ui:Icon window-restore, 20}" ToolTip="Restore">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
@@ -59,6 +60,7 @@
                     </Style>
                 </Button.Style>
             </Button>
+            <ContentPresenter DockPanel.Dock="Right" Content="{Binding ButtonNeighborContent}" VerticalAlignment="Center"/>
             <TextBlock Margin="4" VerticalAlignment="Center" Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
         </DockPanel>
     </Grid>

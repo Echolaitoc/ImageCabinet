@@ -13,7 +13,7 @@
         <ui:InverseBooleanToVisibilityConverter x:Key="invBoolToVis"/>
         <ui:StringWithoutSlashConverter x:Key="strWithoutSlash"/>
     </UserControl.Resources>
-    <DockPanel TextElement.Foreground="WhiteSmoke">
+    <DockPanel TextElement.Foreground="{DynamicResource DefaultForeground}">
         <DockPanel.Resources>
             <Style TargetType="{x:Type Button}" BasedOn="{StaticResource FlatButton}">
                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -23,7 +23,7 @@
         <Button Command="{Binding NavigateBackCommand}" Content="{ui:Icon arrow-left-thick}"/>
         <Button Command="{Binding NavigateForwardCommand}" Content="{ui:Icon arrow-right-thick}"/>
         <Button Command="{Binding NavigateUpCommand}" Content="{ui:Icon arrow-up-thick}"/>
-        <Border CornerRadius="4" BorderBrush="WhiteSmoke" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
+        <Border CornerRadius="4" BorderBrush="{DynamicResource DefaultForeground}" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
             <Grid Background="Transparent" MouseDown="GridMouseDown">
                 <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Background="Yellow" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}">
                     <TextBox.InputBindings>
@@ -38,9 +38,9 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type io:DirectoryInfo}">
-                            <StackPanel Orientation="Horizontal" TextElement.Foreground="WhiteSmoke">
+                            <StackPanel Orientation="Horizontal" TextElement.Foreground="{DynamicResource DefaultForeground}">
                                 <TextBlock x:Name="Separator" Text="\" VerticalAlignment="Center"/>
-                                <Button Style="{StaticResource FlatButton}" Content="{Binding Name, Converter={StaticResource strWithoutSlash}}" Command="{Binding NavigateDirectoryCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DirectoryNavigationBar}}}" VerticalAlignment="Center" Foreground="WhiteSmoke"/>
+                                <Button Style="{StaticResource FlatButton}" Content="{Binding Name, Converter={StaticResource strWithoutSlash}}" Command="{Binding NavigateDirectoryCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DirectoryNavigationBar}}}" VerticalAlignment="Center" Foreground="{DynamicResource DefaultForeground}"/>
                             </StackPanel>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding Parent}" Value="{x:Null}">

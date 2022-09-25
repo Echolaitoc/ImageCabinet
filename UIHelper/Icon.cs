@@ -3,8 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
@@ -14,7 +16,7 @@ namespace ImageCabinet.UIHelper
     {
         internal const int DEFAULT_SIZE = 24;
 
-        public static ImageSource? GetImageSource(string key, Color? fill, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
+        public static ImageSource? GetImageSource(string key, Color? fill, bool addShadow = false, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -54,17 +56,25 @@ namespace ImageCabinet.UIHelper
             {
                 frameworkElement.Effect = new RecolorEffect(fill.GetValueOrDefault());
             }
+            Visual visual = frameworkElement;
+            if (addShadow)
+            {
+                var grid = new Grid();
+                grid.Children.Add(frameworkElement);
+                grid.Effect = GetShadow();
+                visual = grid;
+            }
             var bmp = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-            bmp.Render(frameworkElement);
+            bmp.Render(visual);
 
             return bmp;
         }
 
-        public static Rectangle? GetMaskedRectangle(string key, Brush fill, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
+        public static Rectangle? GetMaskedRectangle(string key, Brush? fill, bool addShadow = false, int width = DEFAULT_SIZE, int height = DEFAULT_SIZE)
         {
             width = width <= 0 ? DEFAULT_SIZE : width;
             height = height <= 0 ? DEFAULT_SIZE : height;
-            var bmp = GetImageSource(key, null, width, height);
+            var bmp = GetImageSource(key, null, false, width, height);
             if (bmp == null) return null;
 
             var rect = new Rectangle()
@@ -82,6 +92,10 @@ namespace ImageCabinet.UIHelper
                     }
                 }
             };
+            if (addShadow)
+            {
+                rect.Effect = GetShadow();
+            }
 
             return rect;
         }
@@ -95,6 +109,11 @@ namespace ImageCabinet.UIHelper
                 return XamlReader.Load(stream);
             }
         }
+
+        private static DropShadowEffect GetShadow()
+        {
+            return new DropShadowEffect() { BlurRadius = 5, Direction = 270 };
+        }
     }
 
     internal class IconExtension : MarkupExtension
@@ -103,6 +122,7 @@ namespace ImageCabinet.UIHelper
         public int Width { get; set; } = Icon.DEFAULT_SIZE;
         public int Height { get; set; } = Icon.DEFAULT_SIZE;
         public bool ForceProvideImageSource { get; set; } = false;
+        public bool AddShadow { get; set; } = false;
         public Brush? Fill { get; set; } = null;
 
         public IconExtension(string key) : this(key, Icon.DEFAULT_SIZE) {}
@@ -127,29 +147,20 @@ namespace ImageCabinet.UIHelper
                 {
                     fillColor = solidFill.Color;
                 }
-                var bmp = Icon.GetImageSource(Key, fillColor, Width, Height);
+                var bmp = Icon.GetImageSource(Key, fillColor, AddShadow, Width, Height);
                 return bmp == null ? DependencyProperty.UnsetValue : bmp;
             }
-            var fill = GetFillBrush(provideValueTarget?.TargetObject as Control);
-            var rect = Icon.GetMaskedRectangle(Key, fill, Width, Height);
-            return rect == null ? DependencyProperty.UnsetValue : rect;
-        }
-
-        private Brush GetFillBrush(Control? target)
-        {
-            if (Fill == null)
+            var rect = Icon.GetMaskedRectangle(Key, Fill, AddShadow, Width, Height);
+            if (rect != null && Fill == null)
             {
-                Brush fill = Brushes.WhiteSmoke;
-                if (target != null)
+                var foregroundBinding = new Binding()
                 {
-                    fill = target.Foreground;
-                }
-                return fill;
+                    Path = new PropertyPath(Control.ForegroundProperty),
+                    RelativeSource = new RelativeSource(RelativeSourceMode.Self)
+                };
+                rect.SetBinding(Shape.FillProperty, foregroundBinding);
             }
-            else
-            {
-                return Fill;
-            }
+            return rect == null ? DependencyProperty.UnsetValue : rect;
         }
     }
 }
