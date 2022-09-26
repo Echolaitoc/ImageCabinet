@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="ImageCabinet.args.json" />
+    <None Remove="Properties\launchSettings.json" />
     <None Remove="UIHelper\RecolorEffect.ps" />
   </ItemGroup>
 
@@ -43,6 +44,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

@@ -16,7 +16,7 @@ namespace ImageCabinet
             {
                 startupDirectory = DEFAULT_DIRECTORY;
             }
-            DirectoryNavigation.Path = startupDirectory;
+            DirectoryNavigation.Path = Environment.ExpandEnvironmentVariables(startupDirectory);
             FileViewer.OnItemDoubleClick += DirectoryNavigation.OnDirectoryNavigationRequest;
         }
     }

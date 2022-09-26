@@ -1,6 +1,6 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 // compile: 
-// .\fxc.exe /T ps_2_0 /Fo "D:\Files\Projects\ImageCabinet\UIHelper\RecolorEffect.ps" "D:\Files\Projects\ImageCabinet\UIHelper\RecolorEffect.fx"
+// .\fxc.exe /T ps_2_0 /Fo "#PATH_TO_PROJECT#\ImageCabinet\UIHelper\RecolorEffect.ps" "#PATH_TO_PROJECT#\ImageCabinet\UIHelper\RecolorEffect.fx"
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 sampler2D implicitInputSampler : register(S0);
