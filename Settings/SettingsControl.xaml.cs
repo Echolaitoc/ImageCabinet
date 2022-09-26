@@ -26,6 +26,12 @@ namespace ImageCabinet.Settings
                 var attributes = property.GetCustomAttributes(typeof(GenerateSettingAttribute), true);
                 if (attributes != null && attributes.Length > 0)
                 {
+                    string displayName = property.Name;
+                    var generateSetting = attributes.FirstOrDefault(a => a is GenerateSettingAttribute generateSetting && generateSetting.DisplayName != null) as GenerateSettingAttribute;
+                    if (generateSetting != null && generateSetting.DisplayName != null)
+                    {
+                        displayName = generateSetting.DisplayName;
+                    }
                     SettingsItem.CustomSettingType customSetting = SettingsItem.CustomSettingType.Default;
                     if (attributes.Any(a => a is GenerateDirectorySettingAttribute))
                     {
@@ -35,7 +41,7 @@ namespace ImageCabinet.Settings
                     {
                         customSetting = SettingsItem.CustomSettingType.Theme;
                     }
-                    var setting = new SettingsItem(property, customSetting);
+                    var setting = new SettingsItem(property, customSetting, displayName);
                     SettingsList.Add(setting);
                 }
             }

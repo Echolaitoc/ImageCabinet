@@ -76,13 +76,13 @@ namespace ImageCabinet.Settings
         }
         #endregion Config Initialization
 
-        [GenerateDirectorySetting]
+        [GenerateDirectorySetting(DisplayName = "Startup directory")]
         public string StartupDirectory { get; private set; } = string.Empty;
 
         [GenerateThemeSetting]
         public string Theme { get; private set; } = "DefaultDark";
 
-        [GenerateSetting]
+        [GenerateSetting(DisplayName = "Foo")]
         public bool TestBool { get; private set; } = true;
 
         [GenerateSetting]

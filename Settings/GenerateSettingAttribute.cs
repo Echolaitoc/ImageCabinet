@@ -5,6 +5,7 @@ namespace ImageCabinet.Settings
     [AttributeUsage(AttributeTargets.Property, Inherited = true)]
     internal class GenerateSettingAttribute : Attribute
     {
+        public string? DisplayName { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Property, Inherited = true)]

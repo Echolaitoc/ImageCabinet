@@ -19,9 +19,9 @@ namespace ImageCabinet.Settings
 
         private event EventHandler? ValueChanged;
 
-        public CustomSettingType CustomSetting { get; set; } = CustomSettingType.Default;
-        public PropertyInfo TargetPropertyInfo { get; set; }
-        public string PropertyName { get { return TargetPropertyInfo.Name; } }
+        public CustomSettingType CustomSetting { get; private set; } = CustomSettingType.Default;
+        public PropertyInfo TargetPropertyInfo { get; private set; }
+        public string DisplayName { get; private set; }
         private bool UpdateConfigValue { get; set; } = true;
 
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(object), typeof(SettingsItem), new FrameworkPropertyMetadata()
@@ -73,10 +73,11 @@ namespace ImageCabinet.Settings
             }
         }
 
-        public SettingsItem(PropertyInfo targetPropertyInfo, CustomSettingType customSetting)
+        public SettingsItem(PropertyInfo targetPropertyInfo, CustomSettingType customSetting, string displayName)
         {
             TargetPropertyInfo = targetPropertyInfo;
             CustomSetting = customSetting;
+            DisplayName = displayName;
             UpdateConfigValue = false;
             switch (CustomSetting)
             {

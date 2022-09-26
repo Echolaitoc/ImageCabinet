@@ -57,9 +57,10 @@ namespace ImageCabinet
                         bitmap.BeginInit();
                         bitmap.StreamSource = new MemoryStream(bytes);
                         bitmap.EndInit();
-                        if (!LoadImagesBackgroundWorker.CancellationPending && !ImageDictionary.ContainsKey(path == null ? string.Empty : path) && IsImageInfoStillValid(imageInfo, path))
+                        var pathValue = path == null ? string.Empty : path;
+                        if (!LoadImagesBackgroundWorker.CancellationPending && !ImageDictionary.ContainsKey(pathValue) && IsImageInfoStillValid(imageInfo, pathValue))
                         {
-                            ImageDictionary.Add(path, bitmap);
+                            ImageDictionary.Add(pathValue, bitmap);
                             imageInfo.ImageItem.SetImage(bitmap);
                         }
                     });

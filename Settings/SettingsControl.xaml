@@ -15,7 +15,7 @@
         <system:Double x:Key="ValueWidth">200</system:Double>
 
         <Style x:Key="LabelTextBlock" TargetType="{x:Type TextBlock}">
-            <Setter Property="Text" Value="{Binding PropertyName}"/>
+            <Setter Property="Text" Value="{Binding DisplayName}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,16,0"/>
         </Style>
