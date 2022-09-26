@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Windows;
 
-namespace ImageCabinet
+namespace ImageCabinet.Settings
 {
     public class Config
     {
@@ -76,7 +76,19 @@ namespace ImageCabinet
         }
         #endregion Config Initialization
 
+        [GenerateSetting]
         public string StartupDirectory { get; private set; } = string.Empty;
+
+        [GenerateThemeSetting]
         public string Theme { get; private set; } = "DefaultDark";
+
+        [GenerateSetting]
+        public bool TestBool { get; private set; } = false;
+
+        [GenerateSetting]
+        public double TestDouble { get; private set; } = 1.5;
+
+        [GenerateSetting]
+        public int TestInt { get; private set; } = 1;
     }
 }

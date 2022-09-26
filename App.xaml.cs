@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using ImageCabinet.Settings;
+using System.Windows;
 
 namespace ImageCabinet
 {
