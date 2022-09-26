@@ -6,18 +6,50 @@
              xmlns:local="clr-namespace:ImageCabinet"
              xmlns:ui="clr-namespace:ImageCabinet.UIHelper"
              xmlns:settings="clr-namespace:ImageCabinet.Settings"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <UserControl.Resources>
         <ui:BrushToTransmittantBrushConverter x:Key="brushToTransmittent"/>
-        
+        <system:Double x:Key="ValueWidth">200</system:Double>
+
         <Style x:Key="LabelTextBlock" TargetType="{x:Type TextBlock}">
             <Setter Property="Text" Value="{Binding PropertyName}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,16,0"/>
         </Style>
+
+        <Style x:Key="ValueTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource FlatTextBox}">
+            <Style.Resources>
+                <ui:BrushToValueAdjustedBrushConverter x:Key="valueAdjust"/>
+            </Style.Resources>
+            <Setter Property="Text" Value="{Binding Value}"/>
+            <Setter Property="Grid.Column" Value="1"/>
+            <Setter Property="Tag" Value="{DynamicResource DefaultBackground}"/>
+            <Setter Property="Background" Value="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource valueAdjust}, ConverterParameter=-0.05}"/>
+            <Setter Property="MaxWidth" Value="{StaticResource ValueWidth}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>
         
+        <DataTemplate x:Key="DirectorySetting" DataType="{x:Type settings:SettingsItem}">
+            <Grid Margin="0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition SharedSizeGroup="LabelGroup" Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition SharedSizeGroup="LabelRowGroup" Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource LabelTextBlock}"/>
+                <DockPanel Grid.Column="1" Width="{StaticResource ValueWidth}" VerticalAlignment="Center">
+                    <Button DockPanel.Dock="Right" Margin="4,0,0,0" Style="{StaticResource FlatButton}" Content="{ui:Icon folder-outline}" VerticalAlignment="Center" ToolTip="Browse for directory" Command="{Binding BrowseForDirectoryCommand, RelativeSource={RelativeSource AncestorType={x:Type settings:SettingsControl}}}" CommandParameter="{Binding}"/>
+                    <TextBox Style="{StaticResource ValueTextBox}" VerticalAlignment="Center" Text="{Binding Value}"/>
+                </DockPanel>
+            </Grid>
+        </DataTemplate>
         <DataTemplate x:Key="ThemeSetting" DataType="{x:Type settings:SettingsItem}">
             <Grid Margin="0,4">
                 <Grid.ColumnDefinitions>
@@ -28,7 +60,7 @@
                     <RowDefinition SharedSizeGroup="LabelRowGroup" Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <ComboBox Grid.Column="1" MinWidth="120" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" MaxWidth="{StaticResource ValueWidth}" VerticalAlignment="Center" ItemsSource="{Binding ValueList}" SelectedItem="{Binding Value}"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="BoolSetting" DataType="{x:Type settings:SettingsItem}">
@@ -38,7 +70,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <CheckBox Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <CheckBox Grid.Column="1" Style="{StaticResource FlatCheckBox}" HorizontalAlignment="Right" VerticalAlignment="Center" IsChecked="{Binding Value}"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="IntSetting" DataType="{x:Type settings:SettingsItem}">
@@ -48,7 +80,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <TextBox Grid.Column="1" Style="{StaticResource FlatTextBox}" MinWidth="120" VerticalAlignment="Center"/>
+                <TextBox Style="{StaticResource ValueTextBox}" PreviewTextInput="IntSetting_PreviewTextInput" DataObject.Pasting="IntSetting_Pasting"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="DoubleSetting" DataType="{x:Type settings:SettingsItem}">
@@ -58,7 +90,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <TextBox Grid.Column="1" Style="{StaticResource FlatTextBox}" MinWidth="120" VerticalAlignment="Center"/>
+                <TextBox Style="{StaticResource ValueTextBox}" PreviewTextInput="DoubleSetting_PreviewTextInput" DataObject.Pasting="DoubleSetting_Pasting"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="StringSetting" DataType="{x:Type settings:SettingsItem}">
@@ -68,11 +100,11 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <TextBox Grid.Column="1" Style="{StaticResource FlatTextBox}" MinWidth="120" VerticalAlignment="Center"/>
+                <TextBox Style="{StaticResource ValueTextBox}"/>
             </Grid>
         </DataTemplate>
 
-        <settings:SettingTemplateSelector x:Key="SettingTemplateSelector" ThemeSettingTemplate="{StaticResource ThemeSetting}" BoolSettingTemplate="{StaticResource BoolSetting}" IntSettingTemplate="{StaticResource IntSetting}" DoubleSettingTemplate="{StaticResource DoubleSetting}" StringSettingTemplate="{StaticResource StringSetting}"/>
+        <settings:SettingTemplateSelector x:Key="SettingTemplateSelector" DirectorySettingTemplate="{StaticResource DirectorySetting}" ThemeSettingTemplate="{StaticResource ThemeSetting}" BoolSettingTemplate="{StaticResource BoolSetting}" IntSettingTemplate="{StaticResource IntSetting}" DoubleSettingTemplate="{StaticResource DoubleSetting}" StringSettingTemplate="{StaticResource StringSetting}"/>
 
         <Style x:Key="SettingContainer" TargetType="{x:Type ListBoxItem}">
             <Setter Property="Template">

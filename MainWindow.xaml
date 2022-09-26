@@ -20,7 +20,7 @@
             <DataTemplate x:Key="SettingsButtonTemplate">
                 <Grid>
                     <Button x:Name="SettingsButton" Content="{ui:Icon wrench, 12}" Padding="4" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Settings" Style="{StaticResource FlatButton}" ui:UIHelper.OpenPopupOnClick="{Binding ElementName=SettingsPopup}"/>
-                    <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=SettingsButton}" StaysOpen="True" AllowsTransparency="True">
+                    <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=SettingsButton}" StaysOpen="False" AllowsTransparency="True">
                         <Border Tag="{DynamicResource DefaultBackground}" Background="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource valueAdjust}, ConverterParameter=0.1}" CornerRadius="4" Margin="4">
                             <Border.Effect>
                                 <DropShadowEffect ShadowDepth="1" Direction="270" BlurRadius="10" Color="{DynamicResource ShadowColor}"/>

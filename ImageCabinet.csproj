@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
   </ItemGroup>
 
@@ -35,6 +36,13 @@
       <Generator>MSBuild:Compile</Generator>
     </Resource>
     <Resource Include="UIHelper\RecolorEffect.ps" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="themes\CorporateNeutral.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
 </Project>

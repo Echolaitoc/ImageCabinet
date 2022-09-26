@@ -46,6 +46,13 @@ namespace ImageCabinet.UIHelper
             return fullPath;
         }
 
+        public static string GetThemeDirectoryPath()
+        {
+            var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly()?.Location);
+            if (string.IsNullOrEmpty(baseDir)) return string.Empty;
+            return Path.Combine(baseDir, THEME_DIR);
+        }
+
         private static ResourceDictionary ReplaceResourceDictionary(ResourceDictionary? resourceDictionary, Uri uri)
         {
             if (resourceDictionary != null)

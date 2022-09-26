@@ -11,4 +11,9 @@ namespace ImageCabinet.Settings
     internal class GenerateThemeSettingAttribute : GenerateSettingAttribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    internal class GenerateDirectorySettingAttribute : GenerateSettingAttribute
+    {
+    }
 }

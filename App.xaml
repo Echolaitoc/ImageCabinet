@@ -33,12 +33,40 @@
         
         <Style x:Key="FlatTextBox" TargetType="{x:Type TextBox}">
             <Setter Property="Foreground" Value="{DynamicResource DefaultForeground}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="CaretBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}}"/>
             <Setter Property="Cursor" Value="IBeam"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <ScrollViewer x:Name="PART_ContentHost" />
+                        <Border Background="{TemplateBinding Background}" CornerRadius="2">
+                            <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FlatCheckBox" TargetType="{x:Type ToggleButton}">
+            <Setter Property="Foreground" Value="{DynamicResource DefaultForeground}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <ContentControl x:Name="CheckBoxImage" Foreground="{TemplateBinding Foreground}" Content="{ui:Icon checkbox-blank-outline, 20}" VerticalAlignment="Center"/>
+                            <ContentPresenter x:Name="CheckBoxLabel" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="{x:Null}">
+                                <Setter TargetName="CheckBoxImage" Property="Content" Value="{ui:Icon checkbox-blank-outline, 20}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxImage" Property="Content" Value="{ui:Icon checkbox-marked, 20}"/>
+                            </Trigger>
+                            <Trigger Property="Content" Value="{x:Null}">
+                                <Setter TargetName="CheckBoxLabel" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
