@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -109,6 +110,21 @@ namespace ImageCabinet.UIHelper
                 }
             }
             return child;
+        }
+
+        public static bool TryParseDouble(object? value, out double doubleValue)
+        {
+            var doubleString = value?.ToString();
+            if (doubleString == null)
+            {
+                doubleValue = 0;
+                return false;
+            }
+            if (doubleString.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator))
+            {
+                return double.TryParse(doubleString, NumberStyles.Any, CultureInfo.CurrentCulture, out doubleValue);
+            }
+            return double.TryParse(doubleString, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue);
         }
     }
 }

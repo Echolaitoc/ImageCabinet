@@ -45,29 +45,7 @@ namespace ImageCabinet.Settings
         {
             if (!(d is SettingsItem setting) || !setting.UpdateConfigValue) return;
 
-            bool settingParsed = false;
-            if (setting.TargetPropertyInfo.PropertyType == typeof(bool) && bool.TryParse(e.NewValue.ToString(), out bool boolValue))
-            {
-                setting.TargetPropertyInfo.SetValue(Config.Current, boolValue, null);
-                settingParsed = true;
-            }
-            else if (setting.TargetPropertyInfo.PropertyType == typeof(int) && int.TryParse(e.NewValue.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out int intValue))
-            {
-                setting.TargetPropertyInfo.SetValue(Config.Current, intValue, null);
-                settingParsed = true;
-            }
-            else if (setting.TargetPropertyInfo.PropertyType == typeof(double) && double.TryParse(e.NewValue.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out double doubleValue))
-            {
-                setting.TargetPropertyInfo.SetValue(Config.Current, doubleValue, null);
-                settingParsed = true;
-            }
-            else if (setting.TargetPropertyInfo.PropertyType == typeof(string))
-            {
-                setting.TargetPropertyInfo.SetValue(Config.Current, e.NewValue.ToString(), null);
-                settingParsed = true;
-            }
-
-            if (settingParsed && setting.ValueChanged != null)
+            if (Config.Current.TrySetValue(setting.TargetPropertyInfo, e.NewValue) && setting.ValueChanged != null)
             {
                 setting.ValueChanged.Invoke(setting, new EventArgs());
             }
@@ -81,6 +59,14 @@ namespace ImageCabinet.Settings
             UpdateConfigValue = false;
             switch (CustomSetting)
             {
+                case CustomSettingType.DirectorySelection:
+                    var path = targetPropertyInfo.GetValue(Config.Current, null) as string;
+                    if (path != null)
+                    {
+                        path = Environment.ExpandEnvironmentVariables(path);
+                    }
+                    Value = path;
+                    break;
                 case CustomSettingType.Theme:
                     GenerateThemeList();
                     break;

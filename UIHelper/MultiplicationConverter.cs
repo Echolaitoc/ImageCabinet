@@ -9,7 +9,7 @@ namespace ImageCabinet.UIHelper
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (double.TryParse(value.ToString(), NumberStyles.Float, CultureInfo.CurrentCulture, out double a) && double.TryParse(parameter.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double b))
+            if (UIHelper.TryParseDouble(value, out double a) && UIHelper.TryParseDouble(parameter, out double b))
             {
                 return a * b;
             }

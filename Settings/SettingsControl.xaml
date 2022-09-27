@@ -9,9 +9,11 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             Unloaded="SettingsControl_Unloaded">
     <UserControl.Resources>
         <ui:BrushToTransmittantBrushConverter x:Key="brushToTransmittent"/>
+        <ui:CultureAgnosticDoubleConverter x:Key="cultureAgnosticDouble"/>
         <system:Double x:Key="ValueWidth">200</system:Double>
 
         <Style x:Key="LabelTextBlock" TargetType="{x:Type TextBlock}">
@@ -24,14 +26,13 @@
             <Style.Resources>
                 <ui:BrushToValueAdjustedBrushConverter x:Key="valueAdjust"/>
             </Style.Resources>
-            <Setter Property="Text" Value="{Binding Value}"/>
+            <Setter Property="Text" Value="{Binding Value, UpdateSourceTrigger=PropertyChanged}"/>
             <Setter Property="Grid.Column" Value="1"/>
             <Setter Property="Tag" Value="{DynamicResource DefaultBackground}"/>
             <Setter Property="Background" Value="{Binding Tag, RelativeSource={RelativeSource Self}, Converter={StaticResource valueAdjust}, ConverterParameter=-0.05}"/>
             <Setter Property="MaxWidth" Value="{StaticResource ValueWidth}"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Right"/>
         </Style>
         
         <DataTemplate x:Key="DirectorySetting" DataType="{x:Type settings:SettingsItem}">
@@ -80,7 +81,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <TextBox Style="{StaticResource ValueTextBox}" PreviewTextInput="IntSetting_PreviewTextInput" DataObject.Pasting="IntSetting_Pasting"/>
+                <TextBox Style="{StaticResource ValueTextBox}" HorizontalContentAlignment="Right" PreviewTextInput="IntSetting_PreviewTextInput" DataObject.Pasting="IntSetting_Pasting"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="DoubleSetting" DataType="{x:Type settings:SettingsItem}">
@@ -90,7 +91,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource LabelTextBlock}"/>
-                <TextBox Style="{StaticResource ValueTextBox}" PreviewTextInput="DoubleSetting_PreviewTextInput" DataObject.Pasting="DoubleSetting_Pasting"/>
+                <TextBox Style="{StaticResource ValueTextBox}" HorizontalContentAlignment="Right" Text="{Binding Value, Converter={StaticResource cultureAgnosticDouble}, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="DoubleSetting_PreviewTextInput" DataObject.Pasting="DoubleSetting_Pasting"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="StringSetting" DataType="{x:Type settings:SettingsItem}">

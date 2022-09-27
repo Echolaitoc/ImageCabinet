@@ -25,7 +25,7 @@
         <Button Command="{Binding NavigateUpCommand}" Content="{ui:Icon arrow-up-thick}"/>
         <Border CornerRadius="4" BorderBrush="{DynamicResource DefaultForeground}" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
             <Grid Background="Transparent" MouseDown="GridMouseDown">
-                <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Background="Yellow" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}">
+                <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding ConfirmPathTextBoxCommand}" Key="Enter" />
                     </TextBox.InputBindings>

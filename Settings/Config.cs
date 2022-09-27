@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Windows;
 
@@ -20,14 +21,26 @@ namespace ImageCabinet.Settings
             }
         }
 
+        private static Config UnchangedConfig { get; set; } = new Config();
+
         private Config() {}
 
         public void Initialize(StartupEventArgs args)
         {
+            Initialize(args, true);
+        }
+
+        private void Initialize(StartupEventArgs args, bool readXml)
+        {
+            if (readXml)
+            {
+                ConfigXml.ReadXmlToConfig();
+                UnchangedConfig.Initialize(args, false);
+            }
             for (int i = 0; i < args.Args.Length; ++i)
             {
                 var arg = args.Args[i];
-                
+
                 var property = GetPropertyFromArg(arg);
                 var value = GetValueFromArg(arg);
                 if (string.IsNullOrEmpty(property) || string.IsNullOrEmpty(value))
@@ -74,15 +87,56 @@ namespace ImageCabinet.Settings
             if (startIndex <= 0) return string.Empty;
             return arg.Substring(startIndex);
         }
+
+        public bool TrySetValue(string propertyName, object? value)
+        {
+            var propertyInfo = GetType().GetProperty(propertyName);
+            if (propertyInfo != null)
+            {
+                return TrySetValue(propertyInfo, value);
+            }
+            return false;
+        }
+
+        public bool TrySetValue(PropertyInfo property, object? value)
+        {
+            bool success = false;
+            if (property.PropertyType == typeof(bool) && bool.TryParse(value?.ToString(), out bool boolValue))
+            {
+                property.SetValue(this, boolValue, null);
+                success = true;
+            }
+            else if (property.PropertyType == typeof(int) && int.TryParse(value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out int intValue))
+            {
+                property.SetValue(this, intValue, null);
+                success = true;
+            }
+            else if (property.PropertyType == typeof(double) && UIHelper.UIHelper.TryParseDouble(value, out double doubleValue))
+            {
+                property.SetValue(this, doubleValue, null);
+                success = true;
+            }
+            else if (property.PropertyType == typeof(string))
+            {
+                property.SetValue(this, value?.ToString(), null);
+                success = true;
+            }
+            return success;
+        }
+
+        public bool IsValueChanged(PropertyInfo property)
+        {
+            return property.GetValue(this)?.ToString() != property.GetValue(UnchangedConfig)?.ToString();
+        }
         #endregion Config Initialization
 
         [GenerateDirectorySetting(DisplayName = "Startup directory")]
-        public string StartupDirectory { get; private set; } = string.Empty;
+        public string StartupDirectory { get; private set; } = @"%USERPROFILE%";
 
         [GenerateThemeSetting]
         public string Theme { get; private set; } = "DefaultDark";
 
-        [GenerateSetting(DisplayName = "Foo")]
+        [GenerateSetting]
         public bool TestBool { get; private set; } = true;
 
         [GenerateSetting]

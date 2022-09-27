@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -84,7 +85,7 @@ namespace ImageCabinet.Settings
             {
                 text += "0";
             }
-            return double.TryParse(text, out double _);
+            return UIHelper.UIHelper.TryParseDouble(text, out double _);
         }
 
         private void HandlePasting(ref System.Windows.DataObjectPastingEventArgs e, Func<string, bool> IsTextAllowed)
@@ -116,6 +117,12 @@ namespace ImageCabinet.Settings
             {
                 setting.Value = dialog.SelectedPath;
             }
+        }
+
+        private void SettingsControl_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!(sender is SettingsControl settingsControl)) return;
+            ConfigXml.WriteSettingsToXml(settingsControl.SettingsList);
         }
     }
 }
