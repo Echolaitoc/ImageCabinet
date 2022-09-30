@@ -9,8 +9,8 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              DataContext="{Binding RelativeSource={RelativeSource Self}}">
-    <Grid>
-        <Grid.Resources>
+    <DockPanel>
+        <DockPanel.Resources>
             <sys:Double x:Key="ItemSize">200</sys:Double>
             <ui:DoubleToSizeConverter x:Key="doubleToSize"/>
             <ui:AdditionConverter x:Key="add"/>
@@ -45,8 +45,11 @@
                     <PropertyGroupDescription PropertyName="IsImage"/>
                 </CollectionViewSource.GroupDescriptions>
             </CollectionViewSource>
-        </Grid.Resources>
-        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.CacheLength="1" VirtualizingPanel.CacheLengthUnit="Page" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="{DynamicResource DefaultForeground}" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
+        </DockPanel.Resources>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+            <TextBlock Text="{Binding FileSystemItems.Count, StringFormat={}{0} items found}"/>
+        </StackPanel>
+        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="{DynamicResource DefaultForeground}" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
@@ -57,6 +60,12 @@
                     <DataTemplate.Resources>
                         <DataTemplate x:Key="DirectoryItem">
                             <ContentControl Content="{ui:Icon folder-outline, 120}"/>
+                        </DataTemplate>
+                        <DataTemplate x:Key="DirectoryRootItem">
+                            <ContentControl Content="{ui:Icon folder-open-outline, 120}"/>
+                        </DataTemplate>
+                        <DataTemplate x:Key="DirectorySubfolderItem">
+                            <ContentControl Content="{ui:Icon folder-hidden, 120}"/>
                         </DataTemplate>
                         <DataTemplate x:Key="GenericFileItem">
                             <ContentControl Content="{ui:Icon file-outline, 120}"/>
@@ -69,6 +78,9 @@
                     <DataTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsDirectory}" Value="True">
                             <Setter TargetName="ImagePresenter" Property="ContentTemplate" Value="{StaticResource DirectoryItem}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSubfolder}" Value="True">
+                            <Setter TargetName="ImagePresenter" Property="ContentTemplate" Value="{StaticResource DirectorySubfolderItem}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsFile}" Value="True">
                             <Setter TargetName="ImagePresenter" Property="ContentTemplate" Value="{StaticResource GenericFileItem}"/>
@@ -90,5 +102,5 @@
                 </DataTemplate>
             </ListBox.Resources>
         </ListBox>
-    </Grid>
+    </DockPanel>
 </UserControl>

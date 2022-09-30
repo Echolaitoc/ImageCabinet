@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -11,6 +12,11 @@ namespace ImageCabinet
 {
     public partial class FileView : UserControl
     {
+        private struct LoadFilesBackgroundWorkerArguments
+        {
+            public bool IncludeFilesInSubfolder { get; set; }
+        }
+
         private static List<string> SUPPORTED_FILE_EXTENSIONS = new()
         {
             ".jpg",
@@ -20,8 +26,13 @@ namespace ImageCabinet
         public event EventHandler? OnItemDoubleClick;
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
         private ThumbnailCache Thumbnails { get; set; } = new();
+        private BackgroundWorker LoadFilesBackgroundWorker { get; } = new();
 
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
+        private Queue<string> PendingPaths { get; set; } = new();
+        private Queue<Tuple<IEnumerable<string>, bool>> PendingDirectories { get; set; } = new();
+        private Queue<IEnumerable<string>> PendingFiles { get; set; } = new();
+        private bool CurrentlyGeneratingPendingItems { get; set; } = false;
 
         public static readonly DependencyProperty PathProperty = DependencyProperty.Register("Path", typeof(string), typeof(FileView), new FrameworkPropertyMetadata()
         {
@@ -32,61 +43,91 @@ namespace ImageCabinet
             get { return (string)GetValue(PathProperty); }
             set { SetValue(PathProperty, value); }
         }
+        private string PathForBackgroundWorker { get; set; }
 
         private static void OnPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(e.NewValue is string strPath) || !(d is FileView fileView)) return;
-            fileView.Thumbnails.ClearCache();
-            fileView.Dispatcher.BeginInvoke(() =>
-            {
-                FillFileSystemItems(ref fileView, fileView.Path, true, true);
-            });
+            if (!(e.NewValue is string strPath) || !Directory.Exists(strPath) || !(d is FileView fileView)) return;
+            fileView.ResetFileSystemItems();
+            fileView.ScrollToTop();
+            fileView.EnqueuePendingPath(strPath);
         }
 
-        private static void FillFileSystemItems(ref FileView fileView, string path, bool clearFileViewFirst, bool addFolders)
+        private void ResetFileSystemItems()
         {
-            if (!Directory.Exists(path))
+            Thumbnails.ClearCache();
+            CancelLoadFilesBackgroundWorker();
+            FileSystemItems.Clear();
+            PendingPaths.Clear();
+            PendingDirectories.Clear();
+            PendingFiles.Clear();
+        }
+
+        private void LoadFilesBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
+        {
+            while (PendingPaths.Count > 0 && !LoadFilesBackgroundWorker.CancellationPending)
             {
-                return;
+                try
+                {
+                    var path = PendingPaths.Dequeue();
+                    if (!Directory.Exists(path)) return;
+                    if (IncludeFilesInSubfolderForBackgroundWorker)
+                    {
+                        AddSubfoldersToPendingPaths(path);
+                    }
+                    PendingDirectories.Enqueue(new(Directory.EnumerateDirectories(path), path == PathForBackgroundWorker ? false : true));
+                    PendingFiles.Enqueue(Directory.EnumerateFiles(path));
+                    Dispatcher.Invoke(() => LoadFilesBackgroundWorker_ProgressChanged(null, new(0, null)));
+                    LoadFilesBackgroundWorker.ReportProgress(1);
+                }
+                catch { }
             }
-            if (clearFileViewFirst)
-            {
-                fileView.FileSystemItems.Clear();
-            }
+        }
+
+        private void LoadFilesBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
+        {
+            if (LoadFilesBackgroundWorker.CancellationPending || CurrentlyGeneratingPendingItems) return;
 
             try
             {
-                var dirs = Directory.EnumerateDirectories(path);
-                foreach (var dir in dirs)
+                CurrentlyGeneratingPendingItems = true;
+                while (PendingDirectories.Count > 0)
                 {
-                    if (addFolders)
+                    var dirs = PendingDirectories.Dequeue();
+                    foreach (var dir in dirs.Item1)
                     {
-                        fileView.FileSystemItems.Add(new FileSystemItem(new DirectoryInfo(dir)));
-                    }
-                    if (fileView.IncludeFilesInSubfolder)
-                    {
-                        FillFileSystemItems(ref fileView, dir, false, false);
+                        FileSystemItems.Add(new FileSystemItem(new DirectoryInfo(dir)) { IsSubfolder = dirs.Item2 });
                     }
                 }
-                var files = Directory.EnumerateFiles(path);
-                foreach (var file in files)
+                while (PendingFiles.Count > 0)
                 {
-                    var fileInfo = new FileInfo(file);
-                    if (SUPPORTED_FILE_EXTENSIONS.Any(ext => file.EndsWith(ext)))
+                    var files = PendingFiles.Dequeue();
+                    foreach (var file in files)
                     {
-                        fileView.FileSystemItems.Add(new ImageItem(fileInfo));
-                    }
-                    else
-                    {
-                        fileView.FileSystemItems.Add(new FileSystemItem(fileInfo));
+                        var fileInfo = new FileInfo(file);
+                        if (SUPPORTED_FILE_EXTENSIONS.Any(ext => file.EndsWith(ext)))
+                        {
+                            FileSystemItems.Add(new ImageItem(fileInfo));
+                        }
+                        else
+                        {
+                            FileSystemItems.Add(new FileSystemItem(fileInfo));
+                        }
                     }
                 }
+                CurrentlyGeneratingPendingItems = false;
             }
-            catch (Exception)
-            {
+            catch { }
+        }
 
+        private void LoadFilesBackgroundWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
+            if (PendingPaths.Count > 0)
+            {
+                IncludeFilesInSubfolderForBackgroundWorker = IncludeFilesInSubfolder;
+                PathForBackgroundWorker = Path;
+                LoadFilesBackgroundWorker.RunWorkerAsync();
             }
-            fileView.ScrollToTop();
         }
 
         private void ScrollToTop()
@@ -109,11 +150,54 @@ namespace ImageCabinet
             get { return (bool)GetValue(IncludeFilesInSubfolderProperty); }
             set { SetValue(IncludeFilesInSubfolderProperty, value); }
         }
+        private bool IncludeFilesInSubfolderForBackgroundWorker { get; set; }
 
         private static void OnIncludeFilesInSubfolderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is FileView fileView)) return;
-            FillFileSystemItems(ref fileView, fileView.Path, true, true);
+            if (e.NewValue is bool includeFilesInSubfolder)
+            {
+                if (includeFilesInSubfolder)
+                {
+                    fileView.CancelLoadFilesBackgroundWorker();
+                    fileView.AddSubfoldersToPendingPaths(fileView.Path);
+                }
+                else
+                {
+                    fileView.ResetFileSystemItems();
+                    fileView.EnqueuePendingPath(fileView.Path);
+                }
+            }
+        }
+
+        private void AddSubfoldersToPendingPaths(string path)
+        {
+            if (!Directory.Exists(path)) return;
+            var dirs = Directory.EnumerateDirectories(path);
+            foreach (var dir in dirs)
+            {
+                EnqueuePendingPath(dir);
+            }
+        }
+
+        private void EnqueuePendingPath(string path)
+        {
+            if (PendingPaths.Contains(path)) return;
+            PendingPaths.Enqueue(path);
+            if (!LoadFilesBackgroundWorker.IsBusy)
+            {
+                IncludeFilesInSubfolderForBackgroundWorker = IncludeFilesInSubfolder;
+                PathForBackgroundWorker = Path;
+                LoadFilesBackgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        private void CancelLoadFilesBackgroundWorker()
+        {
+            if (LoadFilesBackgroundWorker.IsBusy)
+            {
+                LoadFilesBackgroundWorker.CancelAsync();
+            }
         }
 
         public FileView()
@@ -121,6 +205,12 @@ namespace ImageCabinet
             InitializeComponent();
 
             CommandBindings.Add(new CommandBinding(ItemDoubleClickCommand, HandleItemDoubleClick));
+
+            LoadFilesBackgroundWorker.WorkerSupportsCancellation = true;
+            LoadFilesBackgroundWorker.WorkerReportsProgress = true;
+            LoadFilesBackgroundWorker.DoWork += LoadFilesBackgroundWorker_DoWork;
+            LoadFilesBackgroundWorker.ProgressChanged += LoadFilesBackgroundWorker_ProgressChanged;
+            LoadFilesBackgroundWorker.RunWorkerCompleted += LoadFilesBackgroundWorker_RunWorkerCompleted;
         }
 
         private void HandleItemDoubleClick(object sender, ExecutedRoutedEventArgs e)
