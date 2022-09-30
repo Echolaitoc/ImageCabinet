@@ -34,6 +34,8 @@ namespace ImageCabinet
         private Queue<IEnumerable<string>> PendingFiles { get; set; } = new();
         private bool CurrentlyGeneratingPendingItems { get; set; } = false;
 
+        private Point RelativeScrollPosition { get; set; } = new(0.0, 0.0);
+
         public static readonly DependencyProperty PathProperty = DependencyProperty.Register("Path", typeof(string), typeof(FileView), new FrameworkPropertyMetadata()
         {
             PropertyChangedCallback = OnPathChanged
@@ -271,6 +273,24 @@ namespace ImageCabinet
             if (!(sender is Image image)) return;
             if (!(image.DataContext is ImageItem imageItem)) return;
             Thumbnails.LoadImage(imageItem, (int)image.Width, (int)image.Height);
+        }
+
+        private void FileViewListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (!(sender is ListBox listBox) || !(UIHelper.UIHelper.GetVisualChild<ScrollViewer>(listBox) is ScrollViewer scrollViewer)) return;
+
+            if (Math.Abs(e.ExtentHeightChange) > 0.0)
+            {
+                scrollViewer.ScrollToHorizontalOffset(scrollViewer.ComputedHorizontalScrollBarVisibility == Visibility.Visible ? RelativeScrollPosition.X * scrollViewer.ScrollableWidth : 0);
+            }
+            if (Math.Abs(e.ExtentWidthChange) > 0.0)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.ComputedVerticalScrollBarVisibility == Visibility.Visible ? RelativeScrollPosition.Y * scrollViewer.ScrollableHeight : 0);
+            }
+            Point relativeScrollPosition;
+            relativeScrollPosition.X = (scrollViewer.ScrollableWidth == 0) ? 0 : (scrollViewer.HorizontalOffset / scrollViewer.ScrollableWidth);
+            relativeScrollPosition.Y = (scrollViewer.ScrollableHeight == 0) ? 0 : (scrollViewer.VerticalOffset / scrollViewer.ScrollableHeight);
+            RelativeScrollPosition = relativeScrollPosition;
         }
     }
 }

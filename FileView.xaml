@@ -49,7 +49,7 @@
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
             <TextBlock Text="{Binding FileSystemItems.Count, StringFormat={}{0} items found}"/>
         </StackPanel>
-        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="{DynamicResource DefaultForeground}" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}">
+        <ListBox x:Name="FileViewListBox" VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding Source={StaticResource FileSystemItemsViewSource}}" Background="Transparent" Foreground="{DynamicResource DefaultForeground}" BorderBrush="Transparent" SelectionMode="Extended" ItemContainerStyle="{StaticResource FileViewListBoxItemStyle}" ScrollViewer.ScrollChanged="FileViewListBox_ScrollChanged">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <wpfToolkit:VirtualizingWrapPanel ItemSize="{Binding Source={StaticResource ItemSize}, Converter={StaticResource doubleToSize}}" Orientation="Vertical"/>
