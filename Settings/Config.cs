@@ -45,7 +45,14 @@ namespace ImageCabinet.Settings
                 var value = GetValueFromArg(arg);
                 if (string.IsNullOrEmpty(property) || string.IsNullOrEmpty(value))
                 {
-                    System.Diagnostics.Trace.WriteLine("[ImageCabinet.Config.Initialize] can't convert argument to property/value couple: " + arg);
+                    if (i == 0 && System.IO.Directory.Exists(arg))
+                    {
+                        StartupDirectory = arg;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Trace.WriteLine("[ImageCabinet.Config.Initialize] can't convert argument to property/value couple: " + arg);
+                    }
                 }
                 else if (GetType().GetProperty(property) is PropertyInfo propInfo)
                 {
