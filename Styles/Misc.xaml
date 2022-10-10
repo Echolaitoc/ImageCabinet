@@ -37,8 +37,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}" CornerRadius="2">
-                        <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"/>
+                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="2">
+                        <ScrollViewer x:Name="PART_ContentHost" Background="{TemplateBinding Background}"/>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
