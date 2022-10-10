@@ -10,7 +10,8 @@
         Title="ImageCabinet" Height="450" Width="800" MinHeight="{Binding ActualHeight, ElementName=TitleBar}"
         WindowStyle="None"
         Icon="{ui:Icon folder-multiple-image, 128, Fill=Bisque, AddShadow=True}"
-        Background="{DynamicResource DefaultBackground}" TextElement.Foreground="{DynamicResource DefaultForeground}">
+        Background="{DynamicResource DefaultBackground}" TextElement.Foreground="{DynamicResource DefaultForeground}"
+        MouseUp="MainWindow_MouseUp">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>

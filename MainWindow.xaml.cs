@@ -19,5 +19,17 @@ namespace ImageCabinet
             DirectoryNavigation.Path = Environment.ExpandEnvironmentVariables(startupDirectory);
             FileViewer.OnItemDoubleClick += DirectoryNavigation.OnDirectoryNavigationRequest;
         }
+
+        private void MainWindow_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.XButton1 && DirectoryNavigation != null)
+            {
+                DirectoryNavigation.NavigateBack();
+            }
+            else if (e.ChangedButton == System.Windows.Input.MouseButton.XButton2 && DirectoryNavigation != null)
+            {
+                DirectoryNavigation.NavigateForward();
+            }
+        }
     }
 }

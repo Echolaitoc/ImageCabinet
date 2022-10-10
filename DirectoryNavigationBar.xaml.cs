@@ -163,7 +163,20 @@ namespace ImageCabinet
             Path = dirInfo.FullName;
         }
 
+        public void NavigateBack()
+        {
+            if (CanNavigateBack())
+            {
+                DoNavigateBack();
+            }
+        }
+
         private void NavigateBack(object sender, ExecutedRoutedEventArgs e)
+        {
+            DoNavigateBack();
+        }
+
+        private void DoNavigateBack()
         {
             UpdateHistory = false;
             --PathHistoryPosition;
@@ -172,14 +185,32 @@ namespace ImageCabinet
 
         private void CanNavigateBack(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = false;
+            e.CanExecute = CanNavigateBack();
+        }
+
+        private bool CanNavigateBack()
+        {
             if (PathHistory != null && PathHistory.Count > 0)
             {
-                e.CanExecute = PathHistoryPosition > 0;
+                return PathHistoryPosition > 0;
+            }
+            return false;
+        }
+
+        public void NavigateForward()
+        {
+            if (CanNavigateForward())
+            {
+                DoNavigateForward();
             }
         }
 
         private void NavigateForward(object sender, ExecutedRoutedEventArgs e)
+        {
+            DoNavigateForward();
+        }
+
+        private void DoNavigateForward()
         {
             UpdateHistory = false;
             ++PathHistoryPosition;
@@ -188,11 +219,16 @@ namespace ImageCabinet
 
         private void CanNavigateForward(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = false;
+            e.CanExecute = CanNavigateForward();
+        }
+
+        private bool CanNavigateForward()
+        {
             if (PathHistory != null && PathHistory.Count > 0)
             {
-                e.CanExecute = PathHistoryPosition < PathHistory.Count - 1;
+                return PathHistoryPosition < PathHistory.Count - 1;
             }
+            return false;
         }
 
         private void NavigateUp(object sender, ExecutedRoutedEventArgs e)
