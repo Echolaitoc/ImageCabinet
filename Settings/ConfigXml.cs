@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,27 +50,27 @@ namespace ImageCabinet.Settings
             CurrentDocumentContent = doc.OuterXml;
         }
 
-        public static void WriteSettingsToXml(IEnumerable<SettingsItem> settings)
+        public static void WriteSettingsToXml()
         {
-            if (settings == null) return;
-            var changedSettings = settings.Where(s => Config.Current.IsValueChanged(s.TargetPropertyInfo));
-            if (!changedSettings.Any()) return;
+            var changedProperties = Config.Current.GetChangedSaveableProperties();
+            if (!Config.Current.AnyValueChanged && !changedProperties.Any()) return;
             XmlDocument doc = new XmlDocument();
             var root = doc.CreateNode(XmlNodeType.Element, nameof(Config), "");
-            foreach (var setting in changedSettings)
+            foreach (var property in changedProperties)
             {
                 XmlNode node = doc.CreateNode(XmlNodeType.Element, "Setting", "");
                 var propertyAttribute = doc.CreateAttribute(ATTRIBUTE_PROPERTY);
-                propertyAttribute.Value = setting.TargetPropertyInfo.Name;
+                propertyAttribute.Value = property.Name;
                 node.Attributes?.Append(propertyAttribute);
                 var valueAttribute = doc.CreateAttribute(ATTRIBUTE_VALUE);
-                if (setting.TargetPropertyInfo.PropertyType == typeof(double) && UIHelper.UIHelper.TryParseDouble(setting.Value?.ToString(), out double doubleValue))
+                var valueString = property.GetValue(Config.Current)?.ToString();
+                if (property.PropertyType == typeof(double) && UIHelper.UIHelper.TryParseDouble(valueString, out double doubleValue))
                 {
                     valueAttribute.Value = doubleValue.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    valueAttribute.Value = setting.Value?.ToString();
+                    valueAttribute.Value = valueString;
                 }
                 node.Attributes?.Append(valueAttribute);
                 root.AppendChild(node);

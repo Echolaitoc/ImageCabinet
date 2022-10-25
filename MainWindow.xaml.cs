@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageCabinet.Settings;
+using System;
 using System.Windows;
 
 namespace ImageCabinet
@@ -30,6 +31,15 @@ namespace ImageCabinet
             {
                 DirectoryNavigation.NavigateForward();
             }
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            Config.Current.TrySetValue(nameof(Config.Current.WindowWidth), ActualWidth);
+            Config.Current.TrySetValue(nameof(Config.Current.WindowHeight), ActualHeight);
+            Config.Current.TrySetValue(nameof(Config.Current.WindowPositionX), Left);
+            Config.Current.TrySetValue(nameof(Config.Current.WindowPositionY), Top);
+            ConfigXml.WriteSettingsToXml();
         }
     }
 }

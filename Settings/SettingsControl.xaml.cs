@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -48,7 +47,7 @@ namespace ImageCabinet.Settings
             }
         }
 
-        private void IntSetting_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void IntSetting_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             if (!IsIntTextAllowed(e.Text))
             {
@@ -66,7 +65,7 @@ namespace ImageCabinet.Settings
             return int.TryParse(text, out int _);
         }
 
-        private void DoubleSetting_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void DoubleSetting_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             if (!IsDoubleTextAllowed(e.Text))
             {
@@ -121,8 +120,7 @@ namespace ImageCabinet.Settings
 
         private void SettingsControl_Unloaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (!(sender is SettingsControl settingsControl)) return;
-            ConfigXml.WriteSettingsToXml(settingsControl.SettingsList);
+            ConfigXml.WriteSettingsToXml();
         }
     }
 }

@@ -3,7 +3,12 @@
 namespace ImageCabinet.Settings
 {
     [AttributeUsage(AttributeTargets.Property, Inherited = true)]
-    internal class GenerateSettingAttribute : Attribute
+    internal class SaveableToXmlSettingAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Property, Inherited = true)]
+    internal class GenerateSettingAttribute : SaveableToXmlSettingAttribute
     {
         public string? DisplayName { get; set; }
     }

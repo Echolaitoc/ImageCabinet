@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 
@@ -22,6 +24,7 @@ namespace ImageCabinet.Settings
         }
 
         private static Config UnchangedConfig { get; set; } = new Config();
+        public bool AnyValueChanged { get; set; } = false;
 
         private Config() {}
 
@@ -128,12 +131,19 @@ namespace ImageCabinet.Settings
                 property.SetValue(this, value?.ToString(), null);
                 success = true;
             }
+            AnyValueChanged = AnyValueChanged || success;
             return success;
         }
 
         public bool IsValueChanged(PropertyInfo property)
         {
             return property.GetValue(this)?.ToString() != property.GetValue(UnchangedConfig)?.ToString();
+        }
+
+        public IEnumerable<PropertyInfo> GetChangedSaveableProperties()
+        {
+            var properties = GetType().GetProperties();
+            return properties.Where(property => IsValueChanged(property) && property.GetCustomAttributes(typeof(SaveableToXmlSettingAttribute)).Any());
         }
         #endregion Config Initialization
 
@@ -143,13 +153,16 @@ namespace ImageCabinet.Settings
         [GenerateThemeSetting]
         public string Theme { get; private set; } = "DefaultDark";
 
-        [GenerateSetting]
-        public bool TestBool { get; private set; } = true;
+        [SaveableToXmlSetting]
+        public double WindowPositionX { get; private set; } = double.NaN;
 
-        [GenerateSetting]
-        public double TestDouble { get; private set; } = 1.5;
+        [SaveableToXmlSetting]
+        public double WindowPositionY { get; private set; } = double.NaN;
 
-        [GenerateSetting]
-        public int TestInt { get; private set; } = 1;
+        [SaveableToXmlSetting]
+        public double WindowWidth { get; private set; } = double.NaN;
+
+        [SaveableToXmlSetting]
+        public double WindowHeight { get; private set; } = double.NaN;
     }
 }

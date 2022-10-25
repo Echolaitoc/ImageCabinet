@@ -10,6 +10,16 @@ namespace ImageCabinet
             Config.Current.Initialize(e);
             UIHelper.ThemeManager.LoadTheme(Config.Current.Theme);
             MainWindow wnd = new(Config.Current.StartupDirectory);
+            wnd.Left = Config.Current.WindowPositionX;
+            wnd.Top = Config.Current.WindowPositionY;
+            if (!double.IsNaN(Config.Current.WindowWidth))
+            {
+                wnd.Width = Config.Current.WindowWidth;
+            }
+            if (!double.IsNaN(Config.Current.WindowHeight))
+            {
+                wnd.Height = Config.Current.WindowHeight;
+            }
             wnd.Show();
         }
     }

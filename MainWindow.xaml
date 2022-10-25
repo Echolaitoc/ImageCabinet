@@ -11,6 +11,7 @@
         WindowStyle="None"
         Icon="{ui:Icon folder-multiple-image, 128, Fill=Bisque, AddShadow=True}"
         Background="{DynamicResource DefaultBackground}" TextElement.Foreground="{DynamicResource DefaultForeground}"
+        Closed="MainWindow_Closed"
         MouseUp="MainWindow_MouseUp">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>
