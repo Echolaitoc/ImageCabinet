@@ -16,6 +16,9 @@
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo ProgressValue="{Binding Progress, ElementName=FileViewer, Mode=OneWay}" ProgressState="{Binding ProgressState, ElementName=FileViewer}"/>
+    </Window.TaskbarItemInfo>
     <DockPanel>
         <DockPanel.Resources>
             <ui:BrushToValueAdjustedBrushConverter x:Key="valueAdjust"/>
@@ -40,7 +43,7 @@
         </local:TitleBar>
         <DockPanel DockPanel.Dock="Top" Margin="4">
             <ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0" x:Name="CheckboxIncludeSubfolders" ToolTip="Include subfolders" Content="{ui:Icon folder-outline, 24}" ui:UIHelper.ToggledContent="{ui:Icon folder-download, 24}" Style="{StaticResource FlatButton}"/>
-            <local:DirectoryNavigationBar DockPanel.Dock="Top" x:Name="DirectoryNavigation" VerticalAlignment="Center"/>
+            <local:DirectoryNavigationBar DockPanel.Dock="Top" x:Name="DirectoryNavigation" VerticalAlignment="Center" Progress="{Binding Progress, ElementName=FileViewer, Mode=OneWay}"/>
         </DockPanel>
         <Grid Margin="4,8,4,4">
             <local:FileView x:Name="FileViewer" Path="{Binding Path, ElementName=DirectoryNavigation}" IncludeFilesInSubfolder="{Binding IsChecked, ElementName=CheckboxIncludeSubfolders}" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"/>

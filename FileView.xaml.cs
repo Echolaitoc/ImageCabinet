@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shell;
 
 namespace ImageCabinet
 {
@@ -23,6 +25,8 @@ namespace ImageCabinet
             ".png",
         };
 
+        private const int PROGRESS_COMPLETED_DISPLAY_TIME_MILLISECONDS = 2000;
+
         public event EventHandler? OnItemDoubleClick;
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
         private ThumbnailCache Thumbnails { get; set; } = new();
@@ -35,6 +39,52 @@ namespace ImageCabinet
         private bool CurrentlyGeneratingPendingItems { get; set; } = false;
 
         private Point RelativeScrollPosition { get; set; } = new(0.0, 0.0);
+
+        private static readonly DependencyPropertyKey ProgressPropertyKey = DependencyProperty.RegisterReadOnly("Progress", typeof(double), typeof(FileView), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty ProgressProperty = ProgressPropertyKey.DependencyProperty;
+        public double Progress
+        {
+            get { return (double)GetValue(ProgressProperty); }
+            private set { SetValue(ProgressPropertyKey, value); }
+        }
+
+        private int _progressCurrentItemCounter = 0;
+        public int ProgressCurrentItemCounter
+        {
+            get { return _progressCurrentItemCounter; }
+            set
+            {
+                _progressCurrentItemCounter = value;
+                UpdateProgress();
+            }
+        }
+
+        private int _progressTotalItemCounter = 0;
+        public int ProgressTotalItemCounter
+        {
+            get { return _progressTotalItemCounter; }
+            set
+            {
+                _progressTotalItemCounter = value;
+                UpdateProgress();
+            }
+        }
+
+        private void UpdateProgress()
+        {
+            Dispatcher.Invoke(() => Progress = ProgressTotalItemCounter > 0 ? (double)ProgressCurrentItemCounter / (double)ProgressTotalItemCounter : 0);
+        }
+
+        private static readonly DependencyPropertyKey ProgressStatePropertyKey = DependencyProperty.RegisterReadOnly("ProgressState", typeof(TaskbarItemProgressState), typeof(FileView), new PropertyMetadata(TaskbarItemProgressState.None));
+        public static readonly DependencyProperty ProgressStateProperty = ProgressStatePropertyKey.DependencyProperty;
+        public TaskbarItemProgressState ProgressState
+        {
+            get { return (TaskbarItemProgressState)GetValue(ProgressStateProperty); }
+            private set { SetValue(ProgressStatePropertyKey, value); }
+        }
+
+        private Timer ProgressCompletedTimer { get; set; } = new Timer(PROGRESS_COMPLETED_DISPLAY_TIME_MILLISECONDS);
+        private DateTime LoadingStartedTime { get; set; } = DateTime.Now;
 
         public static readonly DependencyProperty PathProperty = DependencyProperty.Register("Path", typeof(string), typeof(FileView), new FrameworkPropertyMetadata()
         {
@@ -52,6 +102,7 @@ namespace ImageCabinet
             if (!(e.NewValue is string strPath) || !Directory.Exists(strPath) || !(d is FileView fileView)) return;
             fileView.ResetFileSystemItems();
             fileView.ScrollToTop();
+            fileView.ProgressState = TaskbarItemProgressState.Indeterminate;
             fileView.EnqueuePendingPath(strPath);
         }
 
@@ -63,13 +114,18 @@ namespace ImageCabinet
             PendingPaths.Clear();
             PendingDirectories.Clear();
             PendingFiles.Clear();
+            ProgressState = TaskbarItemProgressState.None;
+            ProgressTotalItemCounter = 0;
+            ProgressCurrentItemCounter = 0;
+            LoadingStartedTime = DateTime.Now;
         }
 
         private void LoadFilesBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
-            while (PendingPaths.Count > 0 && !LoadFilesBackgroundWorker.CancellationPending)
+            if (!(sender is BackgroundWorker backgroundWorker)) return;
+            try
             {
-                try
+                while (PendingPaths.Count > 0 && !LoadFilesBackgroundWorker.CancellationPending)
                 {
                     var path = PendingPaths.Dequeue();
                     if (!Directory.Exists(path)) return;
@@ -80,14 +136,18 @@ namespace ImageCabinet
                     PendingDirectories.Enqueue(new(Directory.EnumerateDirectories(path), path == PathForBackgroundWorker ? false : true));
                     PendingFiles.Enqueue(Directory.EnumerateFiles(path));
                     Dispatcher.Invoke(() => LoadFilesBackgroundWorker_ProgressChanged(null, new(0, null)));
-                    LoadFilesBackgroundWorker.ReportProgress(1);
+                    backgroundWorker.ReportProgress(0);
                 }
-                catch { }
+            }
+            catch
+            {
+                UIHelper.UIHelper.HandleGenericException();
             }
         }
 
         private void LoadFilesBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
+            ProgressCurrentItemCounter = ProgressTotalItemCounter - PendingPaths.Count;
             if (LoadFilesBackgroundWorker.CancellationPending || CurrentlyGeneratingPendingItems) return;
 
             try
@@ -119,7 +179,10 @@ namespace ImageCabinet
                 }
                 CurrentlyGeneratingPendingItems = false;
             }
-            catch { }
+            catch
+            {
+                UIHelper.UIHelper.HandleGenericException();
+            }
         }
 
         private void LoadFilesBackgroundWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
@@ -130,6 +193,37 @@ namespace ImageCabinet
                 PathForBackgroundWorker = Path;
                 LoadFilesBackgroundWorker.RunWorkerAsync();
             }
+            else
+            {
+                ProgressCurrentItemCounter = ProgressTotalItemCounter;
+                ProgressCompletedTimer.Stop();
+                var progressCompleteShowDuration = Math.Min(PROGRESS_COMPLETED_DISPLAY_TIME_MILLISECONDS, (DateTime.Now - LoadingStartedTime).TotalMilliseconds);
+                if (progressCompleteShowDuration > 0)
+                {
+                    ProgressCompletedTimer.Interval = progressCompleteShowDuration;
+                    ProgressCompletedTimer.Start();
+                }
+                else
+                {
+                    HideProgress();
+                }
+            }
+        }
+
+        private void ProgressCompletedTimer_Elapsed(object? sender, ElapsedEventArgs e)
+        {
+            ProgressCompletedTimer.Stop();
+            HideProgress();
+        }
+
+        private void HideProgress()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ProgressState = TaskbarItemProgressState.None;
+                ProgressCurrentItemCounter = 0;
+                ProgressTotalItemCounter = 0;
+            });
         }
 
         private void ScrollToTop()
@@ -175,7 +269,7 @@ namespace ImageCabinet
         private void AddSubfoldersToPendingPaths(string path)
         {
             if (!Directory.Exists(path)) return;
-            var dirs = Directory.EnumerateDirectories(path);
+            var dirs = Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories);
             foreach (var dir in dirs)
             {
                 EnqueuePendingPath(dir);
@@ -186,6 +280,8 @@ namespace ImageCabinet
         {
             if (PendingPaths.Contains(path)) return;
             PendingPaths.Enqueue(path);
+            ++ProgressTotalItemCounter;
+            Dispatcher.Invoke(() => ProgressState = TaskbarItemProgressState.Normal);
             if (!LoadFilesBackgroundWorker.IsBusy)
             {
                 IncludeFilesInSubfolderForBackgroundWorker = IncludeFilesInSubfolder;
@@ -200,6 +296,7 @@ namespace ImageCabinet
             {
                 LoadFilesBackgroundWorker.CancelAsync();
             }
+            Dispatcher.Invoke(() => ProgressState = TaskbarItemProgressState.None);
         }
 
         public FileView()
@@ -208,11 +305,15 @@ namespace ImageCabinet
 
             CommandBindings.Add(new CommandBinding(ItemDoubleClickCommand, HandleItemDoubleClick));
 
+            PathForBackgroundWorker = string.Empty;
+
             LoadFilesBackgroundWorker.WorkerSupportsCancellation = true;
             LoadFilesBackgroundWorker.WorkerReportsProgress = true;
             LoadFilesBackgroundWorker.DoWork += LoadFilesBackgroundWorker_DoWork;
             LoadFilesBackgroundWorker.ProgressChanged += LoadFilesBackgroundWorker_ProgressChanged;
             LoadFilesBackgroundWorker.RunWorkerCompleted += LoadFilesBackgroundWorker_RunWorkerCompleted;
+
+            ProgressCompletedTimer.Elapsed += ProgressCompletedTimer_Elapsed;
         }
 
         private void HandleItemDoubleClick(object sender, ExecutedRoutedEventArgs e)

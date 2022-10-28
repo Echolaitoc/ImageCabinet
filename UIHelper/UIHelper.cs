@@ -132,5 +132,21 @@ namespace ImageCabinet.UIHelper
             }
             return double.TryParse(doubleString, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue);
         }
+
+        public static void HandleGenericException([System.Runtime.CompilerServices.CallerMemberName] string member = "", [System.Runtime.CompilerServices.CallerFilePath] string filePath = "")
+        {
+            HandleGenericException(string.Empty, member, filePath);
+        }
+
+        public static void HandleGenericException(Exception exception, [System.Runtime.CompilerServices.CallerMemberName] string member = "", [System.Runtime.CompilerServices.CallerFilePath] string filePath = "")
+        {
+            HandleGenericException(exception.Message, member, filePath);
+        }
+
+        public static void HandleGenericException(string? message, [System.Runtime.CompilerServices.CallerMemberName] string member = "", [System.Runtime.CompilerServices.CallerFilePath] string filePath = "")
+        {
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+            System.Diagnostics.Trace.WriteLine("[" + (string.IsNullOrEmpty(fileName) ? "" : fileName + ":") + member + "] Caught exception" + (string.IsNullOrEmpty(message) ? "" : ": " + message));
+        }
     }
 }

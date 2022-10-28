@@ -147,6 +147,13 @@ namespace ImageCabinet
             }
         }
 
+        private static readonly DependencyProperty ProgressProperty = DependencyProperty.Register("Progress", typeof(double), typeof(DirectoryNavigationBar), new PropertyMetadata(0.0));
+        public double Progress
+        {
+            get { return (double)GetValue(ProgressProperty); }
+            set { SetValue(ProgressProperty, value); }
+        }
+
         public DirectoryNavigationBar()
         {
             InitializeComponent();

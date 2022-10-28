@@ -130,4 +130,43 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
+
+    <Style x:Key="NavigationProgressBar" TargetType="{x:Type ProgressBar}">
+        <Style.Resources>
+            <ui:BrushToTransmittantBrushConverter x:Key="brushToTransmittent"/>
+        </Style.Resources>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource DefaultForeground}"/>
+        <Setter Property="Opacity" Value="0.4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Determinate" />
+                                <VisualState x:Name="Indeterminate">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00" Storyboard.TargetName="PART_Indicator" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <SolidColorBrush>Transparent</SolidColorBrush>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border x:Name="PART_Track" BorderBrush="{DynamicResource DefaultForeground}"/>
+                        <Border x:Name="PART_Indicator" HorizontalAlignment="Left" Background="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,-1,0,1">
+                            <Grid ClipToBounds="True" x:Name="Animation">
+                                <Rectangle x:Name="PART_GlowRect" Width="100" HorizontalAlignment="Left" Fill="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" Margin="-100,0,0,0" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

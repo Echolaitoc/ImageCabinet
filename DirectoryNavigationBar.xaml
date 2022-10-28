@@ -25,6 +25,7 @@
         <Button Command="{Binding NavigateUpCommand}" Content="{ui:Icon arrow-up-thick}"/>
         <Border CornerRadius="4" BorderBrush="{DynamicResource DefaultForeground}" Background="Transparent" BorderThickness="1" VerticalAlignment="Center" Margin="4,0,0,0">
             <Grid Background="Transparent" MouseDown="GridMouseDown">
+                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Minimum="0.0" Maximum="1.0" Style="{StaticResource NavigationProgressBar}"/>
                 <TextBox x:Name="PathTextBox" VerticalAlignment="Center" Margin="5" Visibility="{Binding TextBoxVisible, Converter={StaticResource boolToVis}}" Style="{StaticResource FlatTextBox}">
                     <TextBox.InputBindings>
                         <KeyBinding Command="{Binding ConfirmPathTextBoxCommand}" Key="Enter" />
