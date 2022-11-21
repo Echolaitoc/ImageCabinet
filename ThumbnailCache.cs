@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Media.Imaging;
 
 namespace ImageCabinet
@@ -28,7 +29,8 @@ namespace ImageCabinet
         }
 
         private const double DEFAULT_DPI = 96.0;
-        private Stack<ImageInfo> PendingThumbnails { get; } = new();
+        private List<ImageInfo> PendingThumbnails { get; } = new();
+        private Queue<ImageInfo> PendingThumbnailsLowPriority { get; } = new();
         private Dictionary<string, BitmapImage> ImageDictionary { get; } = new();
         private BackgroundWorker LoadImagesBackgroundWorker { get; } = new();
 
@@ -36,22 +38,33 @@ namespace ImageCabinet
         {
             LoadImagesBackgroundWorker.WorkerSupportsCancellation = true;
             LoadImagesBackgroundWorker.DoWork += UpdateBackgroundWorker;
+            LoadImagesBackgroundWorker.RunWorkerCompleted += BackgroundWorkerCompleted;
         }
 
         private void UpdateBackgroundWorker(object? sender, DoWorkEventArgs e)
         {
-            while (PendingThumbnails.Count > 0 && !LoadImagesBackgroundWorker.CancellationPending)
+            while (PendingThumbnails.Count > 0 || PendingThumbnailsLowPriority.Count > 0 && !LoadImagesBackgroundWorker.CancellationPending)
             {
-                var imageInfo = PendingThumbnails.Pop();
-                var path = imageInfo.ImageItem?.Path;
-                if (LoadImagesBackgroundWorker.CancellationPending || !IsImageInfoStillValid(imageInfo, path))
+                ImageInfo? imageInfoNullable = null;
+                if (PendingThumbnails.Count > 0)
+                {
+                    imageInfoNullable = PendingThumbnails.Last();
+                    PendingThumbnails.RemoveAt(PendingThumbnails.Count - 1);
+                }
+                else
+                {
+                    imageInfoNullable = PendingThumbnailsLowPriority.Dequeue();
+                }
+                var path = imageInfoNullable?.ImageItem.Path;
+                if (LoadImagesBackgroundWorker.CancellationPending || imageInfoNullable == null || !IsImageInfoStillValid((ImageInfo)imageInfoNullable, path))
                 {
                     continue;
                 }
+                var imageInfo = (ImageInfo)imageInfoNullable;
                 var bytes = GetImageBytes(imageInfo);
                 if (bytes != null)
                 {
-                    imageInfo.ImageItem?.Dispatcher.BeginInvoke(() =>
+                    imageInfo.ImageItem.Dispatcher.BeginInvoke(() =>
                     {
                         BitmapImage bitmap = new BitmapImage();
                         bitmap.BeginInit();
@@ -67,7 +80,7 @@ namespace ImageCabinet
                 }
                 else
                 {
-                    imageInfo.ImageItem?.Dispatcher.BeginInvoke(() =>
+                    imageInfo.ImageItem.Dispatcher.BeginInvoke(() =>
                     {
                         imageInfo.ImageItem.SetImage(null);
                     });
@@ -152,6 +165,14 @@ namespace ImageCabinet
             PendingThumbnails.Clear();
         }
 
+        private void BackgroundWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        {
+            if ((PendingThumbnails.Any() || PendingThumbnailsLowPriority.Any()) && !LoadImagesBackgroundWorker.IsBusy)
+            {
+                LoadImagesBackgroundWorker.RunWorkerAsync();
+            }
+        }
+
         public void LoadImage(ImageItem imageItem, int maxWidth, int maxHeight)
         {
             if (ImageDictionary.ContainsKey(imageItem.Path))
@@ -160,13 +181,22 @@ namespace ImageCabinet
                 return;
             }
             var imageInfo = new ImageInfo(imageItem, maxWidth, maxHeight);
-            if (!PendingThumbnails.Contains(imageInfo))
+            if (!PendingThumbnails.Contains(imageInfo) && !PendingThumbnailsLowPriority.Contains(imageInfo))
             {
-                PendingThumbnails.Push(imageInfo);
+                PendingThumbnails.Add(imageInfo);
             }
             if (!LoadImagesBackgroundWorker.IsBusy)
             {
                 LoadImagesBackgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        public void DeprioritizeLoadImage(ImageItem imageItem)
+        {
+            if (PendingThumbnails.FirstOrDefault(imageInfo => imageInfo.ImageItem.Path == imageItem.Path) is ImageInfo pendingImageInfo)
+            {
+                PendingThumbnails.Remove(pendingImageInfo);
+                PendingThumbnailsLowPriority.Enqueue(pendingImageInfo);
             }
         }
     }

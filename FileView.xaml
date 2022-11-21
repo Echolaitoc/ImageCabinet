@@ -91,7 +91,7 @@
                     <DockPanel MaxWidth="{Binding Source={StaticResource ItemSize}, Converter={StaticResource add}, ConverterParameter=-8}" MaxHeight="{Binding MaxWidth, RelativeSource={RelativeSource Self}}">
                         <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Name}"/>
                         <Grid>
-                            <Image x:Name="ImageControl" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Source="{ui:Icon image-sync-outline, 100, Fill={StaticResource DefaultForeground}}" Stretch="Uniform" StretchDirection="DownOnly" Loaded="ImageItem_Loaded" SizeChanged="ImageItem_SizeChanged"/>
+                            <Image x:Name="ImageControl" Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Source="{ui:Icon image-sync-outline, 100, Fill={StaticResource DefaultForeground}}" Stretch="Uniform" StretchDirection="DownOnly" Loaded="ImageItem_Loaded" SizeChanged="ImageItem_SizeChanged" Unloaded="ImageItem_Unloaded"/>
                         </Grid>
                     </DockPanel>
                     <DataTemplate.Triggers>

@@ -354,6 +354,13 @@ namespace ImageCabinet
             UpdateImage(sender);
         }
 
+        private void ImageItem_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Image image)) return;
+            if (!(image.DataContext is ImageItem imageItem)) return;
+            Thumbnails.DeprioritizeLoadImage(imageItem);
+        }
+
         private void UpdateImage(object sender)
         {
             if (!(sender is Image image)) return;
