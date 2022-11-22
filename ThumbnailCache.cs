@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Timers;
 using System.Windows.Media.Imaging;
 
 namespace ImageCabinet
@@ -12,14 +13,32 @@ namespace ImageCabinet
         private struct ImageInfo
         {
             public ImageItem ImageItem;
+            public BitmapImage? Bitmap = null;
             public int MaxWidth;
             public int MaxHeight;
+            public bool RetryTimerIsElapsed = true;
+
+            private Timer RetryTimer = new(500);
 
             public ImageInfo(ImageItem imageItem, int maxWidth, int maxHeight)
             {
                 ImageItem = imageItem;
                 MaxWidth = maxWidth;
                 MaxHeight = maxHeight;
+            }
+
+            public void StartRetryTimer()
+            {
+                RetryTimer.Elapsed -= RetryTimer_Elapsed;
+                RetryTimer.Elapsed += RetryTimer_Elapsed;
+                RetryTimerIsElapsed = false;
+                RetryTimer.Start();
+            }
+
+            private void RetryTimer_Elapsed(object? sender, ElapsedEventArgs e)
+            {
+                RetryTimer.Stop();
+                RetryTimerIsElapsed = true;
             }
 
             public override int GetHashCode()
@@ -31,7 +50,8 @@ namespace ImageCabinet
         private const double DEFAULT_DPI = 96.0;
         private List<ImageInfo> PendingThumbnails { get; } = new();
         private Queue<ImageInfo> PendingThumbnailsLowPriority { get; } = new();
-        private Dictionary<string, BitmapImage> ImageDictionary { get; } = new();
+        private Queue<ImageInfo> PendingThumbnailsRetryPriority { get; } = new();
+        private Dictionary<string, ImageInfo> ImageDictionary { get; } = new();
         private BackgroundWorker LoadImagesBackgroundWorker { get; } = new();
 
         public ThumbnailCache()
@@ -43,17 +63,26 @@ namespace ImageCabinet
 
         private void UpdateBackgroundWorker(object? sender, DoWorkEventArgs e)
         {
-            while (PendingThumbnails.Count > 0 || PendingThumbnailsLowPriority.Count > 0 && !LoadImagesBackgroundWorker.CancellationPending)
+            while (PendingThumbnails.Any() || PendingThumbnailsLowPriority.Any() || PendingThumbnailsRetryPriority.Any() && !LoadImagesBackgroundWorker.CancellationPending)
             {
                 ImageInfo? imageInfoNullable = null;
-                if (PendingThumbnails.Count > 0)
+                if (PendingThumbnails.Any())
                 {
                     imageInfoNullable = PendingThumbnails.Last();
                     PendingThumbnails.RemoveAt(PendingThumbnails.Count - 1);
                 }
-                else
+                else if (PendingThumbnailsLowPriority.Any())
                 {
                     imageInfoNullable = PendingThumbnailsLowPriority.Dequeue();
+                }
+                else
+                {
+                    imageInfoNullable = PendingThumbnailsRetryPriority.Dequeue();
+                    if (imageInfoNullable != null && !imageInfoNullable.Value.RetryTimerIsElapsed)
+                    {
+                        PendingThumbnailsRetryPriority.Enqueue(imageInfoNullable.Value);
+                        continue;
+                    }
                 }
                 var path = imageInfoNullable?.ImageItem.Path;
                 if (LoadImagesBackgroundWorker.CancellationPending || imageInfoNullable == null || !IsImageInfoStillValid((ImageInfo)imageInfoNullable, path))
@@ -66,20 +95,23 @@ namespace ImageCabinet
                 {
                     imageInfo.ImageItem.Dispatcher.BeginInvoke(() =>
                     {
-                        BitmapImage bitmap = new BitmapImage();
+                        BitmapImage bitmap = new();
                         bitmap.BeginInit();
                         bitmap.StreamSource = new MemoryStream(bytes);
                         bitmap.EndInit();
                         var pathValue = path == null ? string.Empty : path;
-                        if (!LoadImagesBackgroundWorker.CancellationPending && !ImageDictionary.ContainsKey(pathValue) && IsImageInfoStillValid(imageInfo, pathValue))
+                        if (!LoadImagesBackgroundWorker.CancellationPending && IsImageInfoStillValid(imageInfo, pathValue))
                         {
-                            ImageDictionary.Add(pathValue, bitmap);
+                            imageInfo.Bitmap = bitmap;
+                            ImageDictionary[pathValue] = imageInfo;
                             imageInfo.ImageItem.SetImage(bitmap);
                         }
                     });
                 }
                 else
                 {
+                    PendingThumbnailsRetryPriority.Enqueue(imageInfo);
+                    imageInfo.StartRetryTimer();
                     imageInfo.ImageItem.Dispatcher.BeginInvoke(() =>
                     {
                         imageInfo.ImageItem.SetImage(null);
@@ -99,7 +131,7 @@ namespace ImageCabinet
                     int height = imageInfo.MaxHeight;
                     double dpiX = DEFAULT_DPI;
                     double dpiY = DEFAULT_DPI;
-                    using (var imageStream = File.OpenRead(imageInfo.ImageItem.Path))
+                    using (var imageStream = new FileStream(imageInfo.ImageItem.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
                         var decoder = BitmapDecoder.Create(imageStream, BitmapCreateOptions.IgnoreColorProfile, BitmapCacheOption.Default);
                         width = decoder.Frames[0].PixelWidth;
@@ -114,11 +146,13 @@ namespace ImageCabinet
                         {
                             imageInfo.ImageItem.SetImage(decoder.Preview);
                         }
+                        imageStream.Close();
                     }
 
                     BitmapImage bitmapImage = new();
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(imageInfo.ImageItem.Path);
                     double scale = 1.0;
                     if (width > 0 && width >= height)
@@ -163,11 +197,13 @@ namespace ImageCabinet
             LoadImagesBackgroundWorker.CancelAsync();
             ImageDictionary.Clear();
             PendingThumbnails.Clear();
+            PendingThumbnailsLowPriority.Clear();
+            PendingThumbnailsRetryPriority.Clear();
         }
 
         private void BackgroundWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
-            if ((PendingThumbnails.Any() || PendingThumbnailsLowPriority.Any()) && !LoadImagesBackgroundWorker.IsBusy)
+            if ((PendingThumbnails.Any() || PendingThumbnailsLowPriority.Any() || PendingThumbnailsRetryPriority.Any()) && !LoadImagesBackgroundWorker.IsBusy)
             {
                 LoadImagesBackgroundWorker.RunWorkerAsync();
             }
@@ -177,17 +213,35 @@ namespace ImageCabinet
         {
             if (ImageDictionary.ContainsKey(imageItem.Path))
             {
-                imageItem.SetImage(ImageDictionary[imageItem.Path]);
+                imageItem.SetImage(ImageDictionary[imageItem.Path].Bitmap);
                 return;
             }
             var imageInfo = new ImageInfo(imageItem, maxWidth, maxHeight);
-            if (!PendingThumbnails.Contains(imageInfo) && !PendingThumbnailsLowPriority.Contains(imageInfo))
+            if (!PendingThumbnails.Contains(imageInfo) && !PendingThumbnailsLowPriority.Contains(imageInfo) && !PendingThumbnailsRetryPriority.Contains(imageInfo))
             {
                 PendingThumbnails.Add(imageInfo);
             }
             if (!LoadImagesBackgroundWorker.IsBusy)
             {
                 LoadImagesBackgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        public void ReloadImage(ImageItem imageItem)
+        {
+            if (PendingThumbnails.Any(x => x.ImageItem.Path == imageItem.Path) || PendingThumbnailsLowPriority.Any(x => x.ImageItem.Path == imageItem.Path) || PendingThumbnailsRetryPriority.Any(x => x.ImageItem.Path == imageItem.Path))
+            {
+                return;
+            }
+            if (ImageDictionary.ContainsKey(imageItem.Path))
+            {
+                ImageInfo imageInfo = ImageDictionary[imageItem.Path];
+                imageInfo.Bitmap = null;
+                PendingThumbnails.Add(imageInfo);
+                if (!LoadImagesBackgroundWorker.IsBusy)
+                {
+                    LoadImagesBackgroundWorker.RunWorkerAsync();
+                }
             }
         }
 

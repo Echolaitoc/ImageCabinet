@@ -17,5 +17,10 @@ namespace ImageCabinet
         {
             FileSystemInfo = fileSystemInfo;
         }
+
+        public override string? ToString()
+        {
+            return string.IsNullOrEmpty(Path) ? base.ToString() : Path;
+        }
     }
 }

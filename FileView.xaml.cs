@@ -31,6 +31,7 @@ namespace ImageCabinet
         public ICommand ItemDoubleClickCommand { get; set; } = new RoutedUICommand();
         private ThumbnailCache Thumbnails { get; set; } = new();
         private BackgroundWorker LoadFilesBackgroundWorker { get; } = new();
+        private FileSystemWatcher FileSystemWatcher { get; set; } = new();
 
         public ObservableCollection<FileSystemItem> FileSystemItems { get; set; } = new();
         private Queue<string> PendingPaths { get; set; } = new();
@@ -104,6 +105,8 @@ namespace ImageCabinet
             fileView.ScrollToTop();
             fileView.ProgressState = TaskbarItemProgressState.Indeterminate;
             fileView.EnqueuePendingPath(strPath);
+            fileView.FileSystemWatcher.Path = strPath;
+            fileView.FileSystemWatcher.EnableRaisingEvents = true;
         }
 
         private void ResetFileSystemItems()
@@ -166,6 +169,10 @@ namespace ImageCabinet
                     var files = PendingFiles.Dequeue();
                     foreach (var file in files)
                     {
+                        if (!File.Exists(file))
+                        {
+                            continue;
+                        }
                         var fileInfo = new FileInfo(file);
                         if (SUPPORTED_FILE_EXTENSIONS.Any(ext => file.EndsWith(ext)))
                         {
@@ -263,6 +270,7 @@ namespace ImageCabinet
                     fileView.ResetFileSystemItems();
                     fileView.EnqueuePendingPath(fileView.Path);
                 }
+                fileView.FileSystemWatcher.IncludeSubdirectories = includeFilesInSubfolder;
             }
         }
 
@@ -276,7 +284,7 @@ namespace ImageCabinet
             }
         }
 
-        private void EnqueuePendingPath(string path)
+        private void EnqueuePendingPath(string path, bool updateBackgroundWorkerProperties = true)
         {
             if (PendingPaths.Contains(path)) return;
             PendingPaths.Enqueue(path);
@@ -284,8 +292,11 @@ namespace ImageCabinet
             Dispatcher.Invoke(() => ProgressState = TaskbarItemProgressState.Normal);
             if (!LoadFilesBackgroundWorker.IsBusy)
             {
-                IncludeFilesInSubfolderForBackgroundWorker = IncludeFilesInSubfolder;
-                PathForBackgroundWorker = Path;
+                if (updateBackgroundWorkerProperties)
+                {
+                    IncludeFilesInSubfolderForBackgroundWorker = IncludeFilesInSubfolder;
+                    PathForBackgroundWorker = Path;
+                }
                 LoadFilesBackgroundWorker.RunWorkerAsync();
             }
         }
@@ -297,6 +308,60 @@ namespace ImageCabinet
                 LoadFilesBackgroundWorker.CancelAsync();
             }
             Dispatcher.Invoke(() => ProgressState = TaskbarItemProgressState.None);
+        }
+
+        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            switch (e.ChangeType)
+            {
+                case WatcherChangeTypes.Created:
+                    {
+                        if (Directory.Exists(e.FullPath))
+                        {
+                            var isSubfolder = new DirectoryInfo(e.FullPath).Parent?.FullName != PathForBackgroundWorker;
+                            PendingDirectories.Enqueue(new Tuple<IEnumerable<string>, bool>(new List<string>() { e.FullPath }, isSubfolder));
+                        }
+                        else if (File.Exists(e.FullPath))
+                        {
+                            PendingFiles.Enqueue(new List<string>() { e.FullPath });
+                        }
+                        Dispatcher.Invoke(() => LoadFilesBackgroundWorker_ProgressChanged(null, new(0, null)));
+                        break;
+                    }
+                case WatcherChangeTypes.Deleted:
+                    {
+                        if (FileSystemItems.FirstOrDefault(fileItem => fileItem.Path == e.FullPath) is FileSystemItem fileSystemItem)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                if (fileSystemItem.IsDirectory)
+                                {
+                                    var itemsToRemove = FileSystemItems.Where(fileItem => fileItem.Path.StartsWith(fileSystemItem.Path + System.IO.Path.PathSeparator)).ToList();
+                                    foreach (var itemToRemove in itemsToRemove)
+                                    {
+                                        FileSystemItems.Remove(itemToRemove);
+                                    }
+                                }
+                                FileSystemItems.Remove(fileSystemItem);
+                            });
+                        }
+                        break;
+                    }
+                case WatcherChangeTypes.Changed:
+                    {
+                        if (FileSystemItems.FirstOrDefault(fileItem => fileItem.Path == e.FullPath) is ImageItem imageItem)
+                        {
+                            Thumbnails.ReloadImage(imageItem);
+                        }
+                        break;
+                    }
+                case WatcherChangeTypes.Renamed:
+                    {
+                        break;
+                    }
+                default:
+                    break;
+            }
         }
 
         public FileView()
@@ -314,6 +379,11 @@ namespace ImageCabinet
             LoadFilesBackgroundWorker.RunWorkerCompleted += LoadFilesBackgroundWorker_RunWorkerCompleted;
 
             ProgressCompletedTimer.Elapsed += ProgressCompletedTimer_Elapsed;
+
+            FileSystemWatcher.Changed += FileSystemWatcher_Changed;
+            FileSystemWatcher.Created += FileSystemWatcher_Changed;
+            FileSystemWatcher.Deleted += FileSystemWatcher_Changed;
+            FileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Attributes | NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.Security;
         }
 
         private void HandleItemDoubleClick(object sender, ExecutedRoutedEventArgs e)
