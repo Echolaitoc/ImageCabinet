@@ -5,7 +5,7 @@ namespace ImageCabinet
 {
     public class FileSystemItem : DependencyObject
     {
-        public FileSystemInfo FileSystemInfo { get; set; }
+        public FileSystemInfo? FileSystemInfo { get; set; }
         public bool IsDirectory { get { return FileSystemInfo != null && FileSystemInfo is DirectoryInfo; } }
         public bool IsSubfolder { get; set; }
         public bool IsFile { get { return FileSystemInfo != null && FileSystemInfo is FileInfo; } }
