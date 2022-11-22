@@ -356,11 +356,27 @@ namespace ImageCabinet
                         break;
                     }
                 case WatcherChangeTypes.Renamed:
-                    {
-                        break;
-                    }
+                    break;
                 default:
                     break;
+            }
+        }
+
+        private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
+        {
+            if (FileSystemItems.FirstOrDefault(fileItem => fileItem.Path == e.OldFullPath) is FileSystemItem fileSystemItem)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (Directory.Exists(e.FullPath))
+                    {
+                        fileSystemItem.UpdateFileSystemInfo(new DirectoryInfo(e.FullPath));
+                    }
+                    else if (File.Exists(e.FullPath))
+                    {
+                        fileSystemItem.UpdateFileSystemInfo(new FileInfo(e.FullPath));
+                    }
+                });
             }
         }
 
@@ -383,6 +399,7 @@ namespace ImageCabinet
             FileSystemWatcher.Changed += FileSystemWatcher_Changed;
             FileSystemWatcher.Created += FileSystemWatcher_Changed;
             FileSystemWatcher.Deleted += FileSystemWatcher_Changed;
+            FileSystemWatcher.Renamed += FileSystemWatcher_Renamed;
             FileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Attributes | NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.Security;
         }
 
